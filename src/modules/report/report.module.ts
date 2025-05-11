@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ReportService } from './report.service';
+import { ReportService } from './services/report.service';
 import { ReportController } from './report.controller';
 
 @Module({

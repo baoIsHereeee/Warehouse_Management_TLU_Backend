@@ -1,6 +1,8 @@
 import { Exclude } from "class-transformer";
 import BaseEntity from "../../../databases/base.entity";
 import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Role } from "../../role/entities/role.entity";
+
 
 @Entity({ name: "users" })
 export class User extends BaseEntity {
@@ -19,4 +21,12 @@ export class User extends BaseEntity {
 
     @Column({ type: 'int'})
     age: number;
+
+    @ManyToMany(() => Role, (role) => role.users)
+    @JoinTable({
+        name: "user_roles",
+        joinColumn: { name: "user_id", referencedColumnName: "id" },
+        inverseJoinColumn: { name: "role_id", referencedColumnName: "id" }
+    })
+    roles: Role[];
 }

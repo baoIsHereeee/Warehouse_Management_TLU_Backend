@@ -13,5 +13,6 @@ import { JwtModule } from '../jwt/jwt.module';
   controllers: [UserController],
   providers: [UserService, UserRepository],
   imports: [TypeOrmModule.forFeature([User]), AuthModule, RoleModule, ConfigModule, JwtModule],
+  exports: [UserRepository]
 })
 export class UserModule {}

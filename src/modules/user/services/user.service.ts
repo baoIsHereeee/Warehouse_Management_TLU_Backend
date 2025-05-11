@@ -4,13 +4,12 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { CreateUserDTO, SignInPayload, UpdateUserDTO } from '../dtos';
-import { AuthService } from 'src/modules/auth/services/auth.service';
+import { AuthService } from '../../auth/services/auth.service';
 import { ConfigService } from '@nestjs/config';
 import UserRepository from '../repositories/user.repository';
-import RoleRepository from 'src/modules/role/repositories/role.repository';
-import { Role } from 'src/modules/role/entities/role.entity';
-import { JwtService } from 'src/modules/jwt/services/jwt.service';
-import { RoleService } from 'src/modules/role/services/role.service';
+import RoleRepository from '../../role/repositories/role.repository';
+import { Role } from '../../role/entities/role.entity';
+import { JwtService } from '../../jwt/services/jwt.service';
 
 @Injectable()
 export class UserService {

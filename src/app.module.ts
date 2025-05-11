@@ -21,11 +21,12 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from './modules/jwt/jwt.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { SeedsModule } from './databases/seeds/seeds.module';
 import * as path from "path";
 import typeorm from './databases/typeorm';
 
 @Module({
-  imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, ReportModule, JwtModule, AuthModule,
+  imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, ReportModule, JwtModule, AuthModule, SeedsModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => (configService.get('typeorm') as TypeOrmModuleOptions)
@@ -35,7 +36,7 @@ import typeorm from './databases/typeorm';
       isGlobal: true,
       envFilePath: path.resolve(__dirname, './configs/.env'),
       load: [typeorm]
-    })
+    }),
   ],
   controllers: [AppController, CustomerController, WarehouseController],
   providers: [AppService, ExportRecordService, CustomerService, WarehouseService],

@@ -17,9 +17,24 @@ import { WarehouseService } from './modules/warehouse/warehouse.service';
 import { WarehouseController } from './modules/warehouse/warehouse.controller';
 import { WarehouseModule } from './modules/warehouse/warehouse.module';
 import { ReportModule } from './modules/report/report.module';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as path from "path";
+import typeorm from './databases/typeorm';
 
 @Module({
-  imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, ReportModule],
+  imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, ReportModule,
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => (configService.get('typeorm') as TypeOrmModuleOptions)
+    }),
+
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: path.resolve(__dirname, './configs/.env'),
+      load: [typeorm]
+    }),
+  ],
   controllers: [AppController, CustomerController, WarehouseController],
   providers: [AppService, ExportRecordService, CustomerService, WarehouseService],
 })

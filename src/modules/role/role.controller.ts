@@ -35,13 +35,13 @@ export class RoleController {
         return this.roleService.deleteRole(id);
     }
 
-    // @Post("/:roleId/permissions/:permissionId")
-    // addRolePermission(@Param('roleId') roleId: number, @Param('permissionId') permissionId: number) {
-    //     return this.roleService.addRolePermission(roleId, permissionId);
-    // }
+    @Post("/:roleId/permissions/:permissionId")
+    addRolePermission(@Param('roleId') roleId: string, @Param('permissionId') permissionId: number) {
+        return this.roleService.addRolePermission(roleId, permissionId);
+    }
 
-    // @Delete("/:roleId/permissions/:permissionId")
-    // removeRolePermission(@Param('roleId') roleId: number,@Param('permissionId') permissionId: number) {
-    //     return this.roleService.removeRolePermission(roleId, permissionId);
-    // }
+    @Delete("/:roleId/permissions/:permissionId")
+    removeRolePermission(@Param('roleId') roleId: string, @Param('permissionId') permissionId: number) {
+        return this.roleService.removeRolePermission(roleId, permissionId);
+    }
 }

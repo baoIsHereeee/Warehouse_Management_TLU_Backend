@@ -1,16 +1,18 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import RoleRepository from '../repositories/role.repository';
 import { BaseRoleDTO } from '../dtos/base-role.dto';
-
+import { Role } from '../entities/role.entity';
+import PermissionRepository from '../../permission/repositories/permission.repository';
 @Injectable()
 export class RoleService {
     constructor(
         private roleRepository: RoleRepository,
+        private permissionRepository: PermissionRepository
     ){}
 
     async getAllRoles() {
         return await this.roleRepository.find({
-            relations: ['users']
+            relations: ['users', 'permissions'],
         });
     }
 
@@ -47,5 +49,31 @@ export class RoleService {
         if (!existingRole) throw new BadRequestException('Role not found! Please try again!');
 
         return await this.roleRepository.delete(id);
+    }
+
+    async addRolePermission(roleId: string, permissionId: number) {
+        const role = await this.roleRepository.findOne({ where: { id: roleId } });
+        const permission = await this.permissionRepository.findOne({ where: { id: permissionId } });
+
+        if (!role || !permission) throw new NotFoundException("Role or Permission not found!");
+
+        return await this.roleRepository
+            .createQueryBuilder()
+            .relation(Role, 'permissions')
+            .of(role)
+            .add(permission);
+    }
+
+    async removeRolePermission(roleId: string, permissionId: number){
+        const role = await this.roleRepository.findOne({ where: { id: roleId } });
+        const permission = await this.permissionRepository.findOne({ where: { id: permissionId } });
+
+        if (!role || !permission) throw new NotFoundException("Role or Permission not found!");
+
+        return await this.roleRepository
+            .createQueryBuilder()
+            .relation(Role, 'permissions')
+            .of(role)
+            .remove(permission);
     }
 }

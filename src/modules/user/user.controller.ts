@@ -16,7 +16,7 @@ export class UserController {
         return this.userService.signIn(payload);
     }
 
-    @Get('users')
+    @Get("users")
     getAllUsers(
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
@@ -37,7 +37,7 @@ export class UserController {
         return this.userService.getUserById(id);
     }
 
-    @Post()
+    @Post("users")
     @UsePipes(new ValidationPipe())
     createUser(@Body() createData: CreateUserDTO) {
         return this.userService.createUser(createData);

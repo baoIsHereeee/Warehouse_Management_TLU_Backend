@@ -2,6 +2,7 @@ import { Exclude } from "class-transformer";
 import BaseEntity from "../../../databases/base.entity";
 import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "../../role/entities/role.entity";
+import { Product } from "../../../modules/product/entities/product.entity";
 
 
 @Entity({ name: "users" })
@@ -29,4 +30,7 @@ export class User extends BaseEntity {
         inverseJoinColumn: { name: "role_id", referencedColumnName: "id" }
     })
     roles: Role[];
+
+    @OneToMany(() => Product, (product) => product.user)
+    products: Product[];
 }

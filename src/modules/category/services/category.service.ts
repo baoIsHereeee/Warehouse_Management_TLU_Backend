@@ -3,11 +3,13 @@ import CategoryRepository from '../repositories/category.repository';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { Category } from '../entities/category.entity';
 import { BaseCategoryDTO } from '../dtos/base-category.dto';
+import ProductRepository from '../../../modules/product/repositories/product.repository';
 
 @Injectable()
 export class CategoryService {
     constructor(
         private categoryRepository: CategoryRepository,
+        private productRepository: ProductRepository,
     ){}
 
 
@@ -20,10 +22,10 @@ export class CategoryService {
     }
 
     async getCategoryById(id: string) {
-        const category = await this.categoryRepository.findOne({ where: { id } });
+        const category = await this.categoryRepository.findOne({ where: { id }, relations: ['products'] });
         if (!category) throw new BadRequestException('Category not found! Please try again!');
         
-        return this.categoryRepository.findOne({ where: { id } });
+        return category;
     }
 
     async createCategory(creataData: BaseCategoryDTO) {
@@ -47,6 +49,13 @@ export class CategoryService {
     async deleteCategory(id: string) {
         const category = await this.categoryRepository.findOne({ where: { id } });
         if (!category) throw new BadRequestException('Category not found! Please try again!');
+
+        await this.productRepository
+        .createQueryBuilder()
+        .update()
+        .set({ category: null })
+        .where('category_id = :id', { id })
+        .execute();
 
         return await this.categoryRepository.softDelete(id);
     }

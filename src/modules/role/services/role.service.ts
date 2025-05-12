@@ -48,6 +48,8 @@ export class RoleService {
         const existingRole = await this.roleRepository.findOneBy({ id });
         if (!existingRole) throw new BadRequestException('Role not found! Please try again!');
 
+        if (existingRole.name === 'Admin') throw new BadRequestException('Role Admin cannot be deleted!');
+
         return await this.roleRepository.delete(id);
     }
 

@@ -14,13 +14,13 @@ export class Product extends BaseEntity {
     @Column({ type: "text" })
     description: string;
 
-    @Column({ type: 'text' })
+    @Column({ type: 'text', nullable: true })
     image: string;
 
     @Column()
     current_stock: number;
 
-    @Column()
+    @Column({ nullable: true, default: null })
     minimum_stock: number;
 
     @Column({ type: "decimal", precision: 10, scale: 2 })
@@ -28,9 +28,9 @@ export class Product extends BaseEntity {
 
     @ManyToOne(() => Category, (category) => category.products)
     @JoinColumn({ name: "category_id" })
-    categories: Category;
+    category: Category | null;
 
     @ManyToOne(() => User, (user) => user.products)
     @JoinColumn({ name: "user_id" })
-    user: User;
+    user: User | string;
 }

@@ -7,14 +7,9 @@ import { PermissionModule } from './modules/permission/permission.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ProductModule } from './modules/product/product.module';
 import { ImportRecordModule } from './modules/import-record/import-record.module';
-import { ExportRecordService } from './modules/export-record/services/export-record.service';
 import { ExportRecordModule } from './modules/export-record/export-record.module';
-import { CustomerController } from './modules/customer/customer.controller';
-import { CustomerService } from './modules/customer/services/customer.service';
 import { CustomerModule } from './modules/customer/customer.module';
 import { SupplierModule } from './modules/supplier/supplier.module';
-import { WarehouseService } from './modules/warehouse/services/warehouse.service';
-import { WarehouseController } from './modules/warehouse/warehouse.controller';
 import { WarehouseModule } from './modules/warehouse/warehouse.module';
 import { ReportModule } from './modules/report/report.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
@@ -38,7 +33,7 @@ import typeorm from './databases/typeorm';
       load: [typeorm]
     }),
   ],
-  controllers: [AppController, CustomerController, WarehouseController],
-  providers: [AppService, ExportRecordService, CustomerService, WarehouseService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

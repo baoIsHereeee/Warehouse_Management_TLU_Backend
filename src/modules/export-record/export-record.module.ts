@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ExportRecordController } from './export_record.controller';
+import { ExportRecordController } from './export-record.controller';
 
 @Module({
   controllers: [ExportRecordController]

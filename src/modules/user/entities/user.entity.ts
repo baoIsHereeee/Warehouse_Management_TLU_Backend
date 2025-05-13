@@ -3,6 +3,7 @@ import BaseEntity from "../../../databases/base.entity";
 import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "../../role/entities/role.entity";
 import { Product } from "../../../modules/product/entities/product.entity";
+import { ExportRecord } from "../../../modules/export-record/entities/export.entity";
 
 
 @Entity({ name: "users" })
@@ -33,4 +34,7 @@ export class User extends BaseEntity {
 
     @OneToMany(() => Product, (product) => product.user)
     products: Product[];
+
+    @OneToMany(() => ExportRecord, (exportRecord) => exportRecord.user)
+    exportRecords: ExportRecord[];
 }

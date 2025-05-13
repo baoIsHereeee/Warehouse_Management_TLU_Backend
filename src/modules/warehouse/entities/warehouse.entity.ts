@@ -1,6 +1,7 @@
 import BaseEntity from "../../../databases/base.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { WarehouseDetail } from "./warehouse-detail.entity";
+import { ExportDetail } from "../../../modules/export-record/entities/export-detail.entity";
 
 @Entity({ name: "warehouses" })
 export class Warehouse extends BaseEntity {
@@ -18,4 +19,7 @@ export class Warehouse extends BaseEntity {
 
     @OneToMany(() =>  WarehouseDetail, (warehouseDetail) => warehouseDetail.warehouse)
     warehouseDetails: WarehouseDetail[];
+
+    @OneToMany(() => ExportDetail, (exportDetail) => exportDetail.warehouse)
+    exportDetails: ExportDetail[];
 }

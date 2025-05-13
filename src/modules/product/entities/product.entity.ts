@@ -3,6 +3,7 @@ import BaseEntity from "../../../databases/base.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "../../../modules/user/entities/user.entity";
 import { WarehouseDetail } from "../../../modules/warehouse/entities/warehouse-detail.entity";
+import { ExportDetail } from "../../../modules/export-record/entities/export-detail.entity";
 
 @Entity({ name: "products" })
 export class Product extends BaseEntity {
@@ -37,4 +38,7 @@ export class Product extends BaseEntity {
 
     @OneToMany(() => WarehouseDetail, (warehouseDetail) => warehouseDetail.product)
     warehouseDetails: WarehouseDetail[];
+
+    @OneToMany(() => ExportDetail, (exportDetail) => exportDetail.product)
+    exportDetails: ExportDetail[];
 }

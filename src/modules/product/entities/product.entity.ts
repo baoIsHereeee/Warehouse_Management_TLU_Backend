@@ -2,6 +2,7 @@ import { Category } from "../../../modules/category/entities/category.entity";
 import BaseEntity from "../../../databases/base.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "../../../modules/user/entities/user.entity";
+import { WarehouseDetail } from "../../../modules/warehouse/entities/warehouse-detail.entity";
 
 @Entity({ name: "products" })
 export class Product extends BaseEntity {
@@ -33,4 +34,7 @@ export class Product extends BaseEntity {
     @ManyToOne(() => User, (user) => user.products)
     @JoinColumn({ name: "user_id" })
     user: User | string;
+
+    @OneToMany(() => WarehouseDetail, (warehouseDetail) => warehouseDetail.product)
+    warehouseDetails: WarehouseDetail[];
 }

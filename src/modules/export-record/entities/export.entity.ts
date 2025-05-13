@@ -2,9 +2,10 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { ExportDetail } from "./export-detail.entity";
 import { User } from "../../../modules/user/entities/user.entity";
 import { Customer } from "../../../modules/customer/entities/customer.entity";
+import BaseEntity from "../../../databases/base.entity";
 
 @Entity({ name: "exports" })
-export class ExportRecord {
+export class ExportRecord extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
@@ -20,5 +21,5 @@ export class ExportRecord {
 
     @ManyToOne(() => Customer, (customer) => customer.exportRecords)
     @JoinColumn({ name: "customer_id" })
-    customer: Customer;
+    customer: Customer | null;
 }

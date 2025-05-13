@@ -2,9 +2,10 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { ExportRecord } from "./export.entity";
 import { Warehouse } from "../../../modules/warehouse/entities/warehouse.entity";
 import { Product } from "../../../modules/product/entities/product.entity";
+import BaseEntity from "../../../databases/base.entity";
 
 @Entity({ name: "export_details" })
-export class ExportDetail {
+export class ExportDetail extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 

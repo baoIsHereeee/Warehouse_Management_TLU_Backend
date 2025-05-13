@@ -19,14 +19,14 @@ export class Product extends BaseEntity {
     @Column({ type: 'text', nullable: true })
     image: string;
 
-    @Column()
-    current_stock: number;
+    @Column({ name: "current_stock" })
+    currentStock: number;
 
-    @Column({ nullable: true, default: null })
-    minimum_stock: number;
+    @Column({ nullable: true, default: null, name: "minimum_stock" })
+    minimumStock: number;
 
-    @Column({ type: "decimal", precision: 10, scale: 2 })
-    selling_price: number;
+    @Column({ type: "decimal", precision: 10, scale: 2, name: "selling_price" })
+    sellingPrice: number;
 
     @ManyToOne(() => Category, (category) => category.products)
     @JoinColumn({ name: "category_id" })

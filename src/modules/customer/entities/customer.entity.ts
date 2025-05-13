@@ -1,5 +1,6 @@
+import { ExportRecord } from "../../../modules/export-record/entities/export.entity";
 import BaseEntity from "../../../databases/base.entity";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: "customers" })
 export class Customer extends BaseEntity {
@@ -17,4 +18,7 @@ export class Customer extends BaseEntity {
 
     @Column({ type: 'text' })
     address: string;
+
+    @OneToMany(() => ExportRecord, (exportRecord) => exportRecord.customer)
+    exportRecords: ExportRecord[];
 }

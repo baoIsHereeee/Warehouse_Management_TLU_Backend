@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ExportDetail } from "./export-detail.entity";
 import { User } from "../../../modules/user/entities/user.entity";
+import { Customer } from "../../../modules/customer/entities/customer.entity";
 
 @Entity({ name: "exports" })
 export class ExportRecord {
@@ -16,4 +17,8 @@ export class ExportRecord {
     @ManyToOne(() => User, (user) => user.exportRecords)
     @JoinColumn({ name: "user_id" })
     user: User;
+
+    @ManyToOne(() => Customer, (customer) => customer.exportRecords)
+    @JoinColumn({ name: "customer_id" })
+    customer: Customer;
 }

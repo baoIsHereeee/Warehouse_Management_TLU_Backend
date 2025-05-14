@@ -1,5 +1,6 @@
+import { ImportRecord } from "../../../modules/import-record/entities/import.entity";
 import BaseEntity from "../../../databases/base.entity";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: "suppliers" })
 export class Supplier extends BaseEntity {
@@ -17,4 +18,7 @@ export class Supplier extends BaseEntity {
 
     @Column({ type: 'text' })
     address: string;
+
+    @OneToMany(() => ImportRecord, (importRecord) => importRecord.supplier)
+    importRecords: ImportRecord[];
 }

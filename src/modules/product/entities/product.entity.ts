@@ -4,6 +4,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { User } from "../../../modules/user/entities/user.entity";
 import { WarehouseDetail } from "../../../modules/warehouse/entities/warehouse-detail.entity";
 import { ExportDetail } from "../../../modules/export-record/entities/export-detail.entity";
+import { ImportDetail } from "../../../modules/import-record/entities/import-detail.entity";
 
 @Entity({ name: "products" })
 export class Product extends BaseEntity {
@@ -41,4 +42,7 @@ export class Product extends BaseEntity {
 
     @OneToMany(() => ExportDetail, (exportDetail) => exportDetail.product)
     exportDetails: ExportDetail[];
+
+    @OneToMany(() => ImportDetail, (importDetail) => importDetail.product)
+    importDetails: ImportDetail[];
 }

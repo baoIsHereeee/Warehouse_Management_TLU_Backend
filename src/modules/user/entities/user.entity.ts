@@ -4,6 +4,7 @@ import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColum
 import { Role } from "../../role/entities/role.entity";
 import { Product } from "../../../modules/product/entities/product.entity";
 import { ExportRecord } from "../../../modules/export-record/entities/export.entity";
+import { ImportRecord } from "../../../modules/import-record/entities/import.entity";
 
 
 @Entity({ name: "users" })
@@ -37,4 +38,7 @@ export class User extends BaseEntity {
 
     @OneToMany(() => ExportRecord, (exportRecord) => exportRecord.user)
     exportRecords: ExportRecord[];
+
+    @OneToMany(() => ImportRecord, (importRecord) => importRecord.user)
+    importRecords: ImportRecord[];
 }

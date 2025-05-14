@@ -18,20 +18,20 @@ export class UpdateProductDTO {
     @IsNumber()
     @Transform(({ value }) => Number(value)) 
     @Min(0)
-    current_stock: number;
+    currentStock: number;
 
     @IsNumber()
     @IsOptional()
     @Min(0)
-    minimum_stock: number;
+    minimumStock: number;
 
     @IsOptional()
     @IsNumber()
     @Transform(({ value }) => Number(value))
     @Min(0)
-    selling_price: number;
+    sellingPrice: number;
 
     @IsString()
     @IsOptional()
-    category_id: string;
+    categoryId: string;
 }

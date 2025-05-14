@@ -1,4 +1,221 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ImportRecord } from '../entities/import.entity';
+import ImportRepository from '../repositories/import.repository';
+import ImportDetailRepository from '../repositories/import-detail.repository';
+import { DataSource } from 'typeorm';
+import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
+import { CreateImportDTO, UpdateImportDTO } from '../dtos';
+import { ImportDetail } from '../entities/import-detail.entity';
+import UserRepository from '../../../modules/user/repositories/user.repository';
+import SupplierRepository from '../../../modules/supplier/repositories/customer.repository';
+import { User } from '../../../modules/user/entities/user.entity';
+import { Supplier } from '../../../modules/supplier/entities/supplier.entity';
+import { WarehouseDetail } from '../../../modules/warehouse/entities/warehouse-detail.entity';
+import WarehouseDetailRepository from '../../../modules/warehouse/repositories/warehouse-detail.repository';
+import { Product } from 'src/modules/product/entities/product.entity';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
-export class ImportRecordService {}
+export class ImportRecordService {
+    constructor(
+        private importRepository: ImportRepository,
+        private dataSource: DataSource,
+    ) {}
+
+    async getAllImportRecords(options: IPaginationOptions, query?: string): Promise<Pagination<ImportRecord>> {
+        const queryBuilder = this.importRepository.createQueryBuilder('import');
+
+        if (query) queryBuilder.where('LOWER(import.id) LIKE :query', { query: `%${query.toLowerCase()}%` });
+
+        return paginate<ImportRecord>(queryBuilder, options);
+    }
+
+    async getImportRecordById(id: string) {
+        const importRecord = await this.importRepository.findOne({
+            where: { id },
+            relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'supplier', 'user'],
+        });
+
+        if (!importRecord) throw new NotFoundException(`Import ${id} not found! Please try again!`);
+        return importRecord;
+    }
+
+    async createImportRecord(createData: CreateImportDTO) {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const importRepository = queryRunner.manager.getRepository(ImportRecord);
+            const importDetailRepository = queryRunner.manager.getRepository(ImportDetail);
+            const userRepository = queryRunner.manager.getRepository(User);
+            const supplierRepository = queryRunner.manager.getRepository(Supplier);
+            const warehouseDetailRepository = queryRunner.manager.getRepository(WarehouseDetail);
+            const productRepository = queryRunner.manager.getRepository(Product);
+
+            const newImportRecord = importRepository.create({
+                description: createData.description,
+                supplier: createData.supplierId ? await supplierRepository.findOne({ where: { id: createData.supplierId } }) : null,
+                user: await userRepository.findOne({ where: { id: createData.userId } }) as User
+            });
+
+            const savedImportRecord = await importRepository.save(newImportRecord);
+
+            for (const newImportDetail of createData.importDetails) {
+                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: newImportDetail.productId, warehouseId: newImportDetail.warehouseId }, relations: ['product'] });
+                if (productWarehouse) {
+                    productWarehouse.quantity += newImportDetail.quantity;
+                    await warehouseDetailRepository.save(productWarehouse);
+
+                    productWarehouse.product.currentStock += newImportDetail.quantity;
+                    await queryRunner.manager.save(productWarehouse.product);
+
+                } else {
+                    const products = await productRepository.findOne({ where: { id: newImportDetail.productId } });
+                    if (!products) throw new NotFoundException(`Product with id ${newImportDetail.productId} not found! Please try again!`);
+
+                    const newWarehouseDetail = warehouseDetailRepository.create({
+                        product: { id: newImportDetail.productId },
+                        warehouse: { id: newImportDetail.warehouseId },
+                        quantity: newImportDetail.quantity,
+                    });
+                    await warehouseDetailRepository.save(newWarehouseDetail);
+                    
+                    products.currentStock += newImportDetail.quantity;
+                    await productRepository.save(products);
+                }
+
+                const savedImportDetail = importDetailRepository.create({
+                    quantity: newImportDetail.quantity,
+                    importPrice: newImportDetail.importPrice,
+                    product: { id: newImportDetail.productId },
+                    warehouse: { id: newImportDetail.warehouseId },
+                    importRecord: savedImportRecord,
+                });
+
+                await importDetailRepository.save(savedImportDetail);
+            }
+
+            await queryRunner.commitTransaction();
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            await queryRunner.release();
+        }
+    }
+
+    async updateImportRecord(id: string, updateData: UpdateImportDTO) {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const importRepository = queryRunner.manager.getRepository(ImportRecord);
+            const importDetailRepository = queryRunner.manager.getRepository(ImportDetail);
+            const supplierRepository = queryRunner.manager.getRepository(Supplier);
+            const warehouseDetailRepository = queryRunner.manager.getRepository(WarehouseDetail);
+            const productRepository = queryRunner.manager.getRepository(Product);
+
+            const importRecord = await importRepository.findOne({ where: { id }, relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse'] });
+            if (!importRecord) throw new NotFoundException(`Import with id ${id} not found! Please try again!`);
+
+            for (const importDetail of importRecord.importDetails) {
+                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: importDetail.product.id, warehouseId: importDetail.warehouse.id }, relations: ['product'] });
+                if (productWarehouse) {
+                    productWarehouse.quantity -= importDetail.quantity;
+                    await warehouseDetailRepository.save(productWarehouse);
+
+                    productWarehouse.product.currentStock -= importDetail.quantity;
+                    await queryRunner.manager.save(productWarehouse.product);
+                }
+            }
+
+            await importDetailRepository.delete({ importRecord: { id } });
+
+            for (const newImportDetail of updateData.importDetails) {
+                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: newImportDetail.productId, warehouseId: newImportDetail.warehouseId }, relations: ['product'] });
+                if (productWarehouse) {
+                    productWarehouse.quantity += newImportDetail.quantity;
+                    await warehouseDetailRepository.save(productWarehouse);
+
+                    productWarehouse.product.currentStock += newImportDetail.quantity;
+                    await queryRunner.manager.save(productWarehouse.product);
+                } else {
+                    const products = await productRepository.findOne({ where: { id: newImportDetail.productId } });
+                    if (!products) throw new NotFoundException(`Product with id ${newImportDetail.productId} not found! Please try again!`);
+
+                    const newWarehouseDetail = warehouseDetailRepository.create({
+                        product: { id: newImportDetail.productId },
+                        warehouse: { id: newImportDetail.warehouseId },
+                        quantity: newImportDetail.quantity,
+                    });
+                    await warehouseDetailRepository.save(newWarehouseDetail);
+                    
+                    products.currentStock += newImportDetail.quantity;
+                    await productRepository.save(products);
+                }
+
+                const savedImportDetail = importDetailRepository.create({
+                    quantity: newImportDetail.quantity,
+                    importPrice: newImportDetail.importPrice,
+                    product: { id: newImportDetail.productId },
+                    warehouse: { id: newImportDetail.warehouseId },
+                    importRecord: importRecord,
+                });
+
+                await importDetailRepository.save(savedImportDetail);
+            }
+
+            const { importDetails, supplierId, ...rest } = updateData;
+            const supplier = updateData.supplierId ? await supplierRepository.findOne({ where: { id: updateData.supplierId } }) : null;
+            await importRepository.update(id, {
+                ...rest,
+                supplier: supplier,
+            });
+
+            await queryRunner.commitTransaction();
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            await queryRunner.release();
+        }
+    }
+
+    async deleteImportRecord(id: string) {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const importRepository = queryRunner.manager.getRepository(ImportRecord);
+            const importDetailRepository = queryRunner.manager.getRepository(ImportDetail);
+            const warehouseDetailRepository = queryRunner.manager.getRepository(WarehouseDetail);
+
+            const importRecord = await importRepository.findOne({ where: { id }, relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse'] });
+            if (!importRecord) throw new NotFoundException(`Import with id ${id} not found! Please try again!`);
+
+            for (const importDetail of importRecord.importDetails) {
+                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: importDetail.product.id, warehouseId: importDetail.warehouse.id }, relations: ['product'] });
+                if (productWarehouse) {
+                    productWarehouse.quantity -= importDetail.quantity;
+                    await warehouseDetailRepository.save(productWarehouse);
+
+                    productWarehouse.product.currentStock -= importDetail.quantity;
+                    await queryRunner.manager.save(productWarehouse.product);
+                }
+            }
+
+            await importDetailRepository.delete({ importRecord: { id } });
+            await importRepository.delete(id);
+
+            await queryRunner.commitTransaction();
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            await queryRunner.release();
+        }
+    }
+}

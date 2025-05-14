@@ -12,8 +12,8 @@ export class ImportDetail extends BaseEntity {
     @Column({type: 'int' })
     quantity: number;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
-    price: number;
+    @Column({ type: 'decimal', precision: 10, scale: 2 , name: "import_price"})
+    importPrice: number;
 
     @ManyToOne(() => ImportRecord, (importRecord) => importRecord.importDetails)
     @JoinColumn({ name: 'import_record_id' })

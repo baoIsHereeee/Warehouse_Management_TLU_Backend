@@ -9,14 +9,10 @@ export class UpdateImportDTO {
 
     @IsOptional()
     @IsString()
-    userId: string;
-
-    @IsOptional()
-    @IsString()
-    customerId: string;
+    supplierId: string;
 
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => ImportDetailDTO)
-    exportDetails: ImportDetailDTO[];
+    importDetails: ImportDetailDTO[];
 }

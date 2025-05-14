@@ -18,7 +18,7 @@ export class ImportRecord extends BaseEntity {
 
     @ManyToOne(() => Supplier, (supplier) => supplier.importRecords)
     @JoinColumn({ name: 'supplier_id' })
-    supplier: Supplier;
+    supplier: Supplier | null;
 
     @OneToMany(() => ImportDetail, (importDetail) => importDetail.importRecord)
     importDetails: ImportDetail[];

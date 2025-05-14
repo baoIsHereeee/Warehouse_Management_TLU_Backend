@@ -12,12 +12,12 @@ export class CreateImportDTO {
 
     @IsOptional()
     @IsString()
-    customerId: string;
+    supplierId: string;
 
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => ImportDetailDTO)
-    exportDetails: ImportDetailDTO[];
+    importDetails: ImportDetailDTO[];
 }
 
 export class ImportDetailDTO {
@@ -37,5 +37,5 @@ export class ImportDetailDTO {
     @IsNotEmpty()
     @IsNumber()
     @Min(0)
-    sellingPrice: number;
+    importPrice: number;
 }

@@ -3,8 +3,9 @@ import ProductRepository from '../repositories/product.repository';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { Product } from '../entities/product.entity';
 import { CreateProductDTO, UpdateProductDTO } from '../dtos';
-import CategoryRepository from 'src/modules/category/repositories/category.repository';
-import UserRepository from 'src/modules/user/repositories/user.repository';
+import CategoryRepository from '../../../modules/category/repositories/category.repository';
+import UserRepository from '../../../modules/user/repositories/user.repository';
+import { MailService } from '../../../modules/mail/services/mail.service';
 
 @Injectable()
 export class ProductService {
@@ -12,6 +13,7 @@ export class ProductService {
         private productRepository: ProductRepository,
         private categoryRepository: CategoryRepository,
         private userRepository: UserRepository,
+        private mailService: MailService,
     ){}
 
     async getAllProducts(options: IPaginationOptions, query?: string): Promise<Pagination<Product>> {
@@ -40,18 +42,22 @@ export class ProductService {
             category: createData.categoryId ? await this.categoryRepository.findOne({ where: { id: createData.categoryId } }) : null,
         });
         
-        return await this.productRepository.save(product);
+        const savedProduct = await this.productRepository.save(product);
+
+        await this.mailService.sendCreateProductEmail(savedProduct);
+
+        return savedProduct;
     }
 
     async updateProduct(id: string, updateData: UpdateProductDTO) {
         const product = await this.getProductById(id);
         if (!product) throw new NotFoundException('Product not found! Please try again!');
 
-        if (updateData.category_id){
-            const category = await this.categoryRepository.findOne({ where: { id: updateData.category_id } });
+        if (updateData.categoryId){
+            const category = await this.categoryRepository.findOne({ where: { id: updateData.categoryId } });
             if (!category) throw new NotFoundException('Category not found! Please try again!');
 
-            const { category_id, ...updateDataWithoutCategoryID } = updateData;
+            const { categoryId, ...updateDataWithoutCategoryID } = updateData;
             const newUpdateData = { ...updateDataWithoutCategoryID, category: category} ;
 
             return await this.productRepository.update(id, newUpdateData);

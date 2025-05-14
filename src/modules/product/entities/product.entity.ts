@@ -35,7 +35,7 @@ export class Product extends BaseEntity {
 
     @ManyToOne(() => User, (user) => user.products)
     @JoinColumn({ name: "user_id" })
-    user: User | string;
+    user: User | null;
 
     @OneToMany(() => WarehouseDetail, (warehouseDetail) => warehouseDetail.product)
     warehouseDetails: WarehouseDetail[];

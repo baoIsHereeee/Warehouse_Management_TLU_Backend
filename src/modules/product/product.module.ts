@@ -4,11 +4,12 @@ import { ProductService } from './services/product.service';
 import ProductRepository from './repositories/product.repository';
 import { CategoryModule } from '../category/category.module';
 import { UserModule } from '../user/user.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   controllers: [ProductController],
   providers: [ProductService, ProductRepository],
   exports: [ProductRepository],
-  imports: [forwardRef(() => CategoryModule), UserModule],
+  imports: [forwardRef(() => CategoryModule), UserModule, MailModule],
 })
 export class ProductModule {}

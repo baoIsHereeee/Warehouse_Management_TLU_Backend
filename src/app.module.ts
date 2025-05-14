@@ -19,6 +19,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { SeedsModule } from './databases/seeds/seeds.module';
 import * as path from "path";
 import typeorm from './databases/typeorm';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, ReportModule, JwtModule, AuthModule, SeedsModule,
@@ -32,6 +35,35 @@ import typeorm from './databases/typeorm';
       envFilePath: path.resolve(__dirname, './configs/.env'),
       load: [typeorm]
     }),
+    MailerModule.forRootAsync({
+      imports: [ConfigModule], 
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          host: configService.get<string>('MAIL_SERVER_HOST'),
+          port: configService.get<number>('MAIL_SERVER_PORT'),
+          secure: configService.get<boolean>('MAIL_SERVER_SECURE'), 
+          auth: {
+            user: configService.get<string>('MAIL_SERVER_USER'),
+            pass: configService.get<string>('MAIL_SERVER_PASSWORD'),
+          },
+        },
+        tls: {
+          rejectUnauthorized: false, 
+        },
+        defaults: {
+          from: `${configService.get<string>('MAIL_SERVER_FROM')}`,
+        },
+        template: {
+          dir: path.join(__dirname, 'templates'),
+          adapter: new HandlebarsAdapter(), 
+          options: {
+            strict: false,
+          },
+        },
+      }),
+      inject: [ConfigService],
+    }),
+    MailModule
   ],
   controllers: [AppController],
   providers: [AppService],

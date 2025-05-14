@@ -1,0 +1,47 @@
+<h2>🎉 A New Product Has Been Successfully Created! 🎉</h2>
+
+{{#if productData.user}}
+  <p><strong>Created By:</strong> {{productData.user.fullname}}</p>
+{{/if}}
+
+<p>Here are the details of the newly added product:</p>
+
+<table border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse;">
+  <thead>
+    <tr>
+      <th align="left">Field</th>
+      <th align="left">Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Name</strong></td>
+      <td>{{productData.name}}</td>
+    </tr>
+    <tr>
+      <td><strong>Description</strong></td>
+      <td>{{productData.description}}</td>
+    </tr>
+    <tr>
+      <td><strong>Current Stock</strong></td>
+      <td>{{productData.currentStock}}</td>
+    </tr>
+    <tr>
+      <td><strong>Minimum Stock</strong></td>
+      <td>{{productData.minimumStock}}</td>
+    </tr>
+    <tr>
+      <td><strong>Selling Price</strong></td>
+      <td>{{productData.sellingPrice}} VND</td>
+    </tr>
+    {{#if productData.category}}
+      <tr>
+        <td><strong>Category</strong></td>
+        <td>{{productData.category.name}}</td>
+      </tr>
+    {{/if}}
+  </tbody>
+</table>
+
+<hr />
+<p>Warehouse Management System</p>

@@ -31,13 +31,13 @@ export class ProductService {
     }
 
     async createProduct(createData: CreateProductDTO) {
-        const currentUser = await this.userRepository.findOne({ where: { id: createData.user_id } });
+        const currentUser = await this.userRepository.findOne({ where: { id: createData.userId } });
         if (!currentUser) throw new NotFoundException('User not found! Please try again!');
 
         const product = this.productRepository.create({
             ...createData,
             user: currentUser,
-            category: createData.category_id ? await this.categoryRepository.findOne({ where: { id: createData.category_id } }) : null,
+            category: createData.categoryId ? await this.categoryRepository.findOne({ where: { id: createData.categoryId } }) : null,
         });
         
         return await this.productRepository.save(product);

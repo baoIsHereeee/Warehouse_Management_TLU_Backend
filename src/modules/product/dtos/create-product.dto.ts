@@ -18,24 +18,24 @@ export class CreateProductDTO {
     @IsNumber()
     @Transform(({ value }) => Number(value)) 
     @Min(0)
-    current_stock: number;
+    currentStock: number;
 
     @IsNumber()
     @IsOptional()
     @Min(0)
-    minimum_stock: number;
+    minimumStock: number;
 
     @IsNotEmpty()
     @IsNumber()
     @Min(0)
     @Transform(({ value }) => Number(value))
-    selling_price: number;
+    sellingPrice: number;
 
     @IsString()
     @IsOptional()
-    category_id: string;
+    categoryId: string;
 
     @IsString()
     @IsNotEmpty()
-    user_id: string;
+    userId: string;
 }

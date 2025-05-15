@@ -1,0 +1,53 @@
+<h2>🔄 A Product Has Been Updated! 🔄</h2>
+
+{{#if user}}
+  <p><strong>👤 Updated By:</strong> {{user.fullname}} ({{user.email}})</p>
+{{/if}}
+
+<p>Below is the comparison of the product details before and after the update:</p>
+
+<table border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+  <thead>
+    <tr style="background-color: #f2f2f2;">
+      <th>Field</th>
+      <th>Before Update</th>
+      <th>After Update</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Name</strong></td>
+      <td>{{oldProductData.name}}</td>
+      <td>{{newProductData.name}}</td>
+    </tr>
+    <tr>
+      <td><strong>Description</strong></td>
+      <td>{{oldProductData.description}}</td>
+      <td>{{newProductData.description}}</td>
+    </tr>
+    <tr>
+      <td><strong>Current Stock</strong></td>
+      <td>{{oldProductData.currentStock}}</td>
+      <td>{{newProductData.currentStock}}</td>
+    </tr>
+    <tr>
+      <td><strong>Minimum Stock</strong></td>
+      <td>{{oldProductData.minimumStock}}</td>
+      <td>{{newProductData.minimumStock}}</td>
+    </tr>
+    <tr>
+      <td><strong>Selling Price</strong></td>
+      <td>{{oldProductData.sellingPrice}} VND</td>
+      <td>{{newProductData.sellingPrice}} VND</td>
+    </tr>
+    {{#if oldProductData.category}}
+      <tr>
+        <td><strong>Category</strong></td>
+        <td>{{oldProductData.category.name}}</td>
+        <td>{{newProductData.category.name}}</td>
+      </tr>
+    {{/if}}
+  </tbody>
+</table>
+
+<p>Warehouse Management System</p>

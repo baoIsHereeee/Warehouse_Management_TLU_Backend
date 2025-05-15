@@ -53,17 +53,24 @@ export class ProductService {
         const product = await this.getProductById(id);
         if (!product) throw new NotFoundException('Product not found! Please try again!');
 
+        const oldProduct = { ...product };
+
         if (updateData.categoryId){
             const category = await this.categoryRepository.findOne({ where: { id: updateData.categoryId } });
             if (!category) throw new NotFoundException('Category not found! Please try again!');
 
-            const { categoryId, ...updateDataWithoutCategoryID } = updateData;
-            const newUpdateData = { ...updateDataWithoutCategoryID, category: category} ;
-
-            return await this.productRepository.update(id, newUpdateData);
+            product.category = category;
+            await this.productRepository.save(product);
         }
 
-        return await this.productRepository.update(id, updateData); 
+        const { categoryId, ...rest } = updateData;
+        await this.productRepository.update(id, rest); 
+
+        const updatedProduct = await this.productRepository.findOne({ where: { id }, relations: ['user', 'category'] }) as Product;
+
+        await this.mailService.sendUpdateProductEmail(oldProduct, updatedProduct);
+
+        return updatedProduct;
     }
 
     async deleteProduct(id: string) {

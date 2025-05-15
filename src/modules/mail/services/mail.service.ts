@@ -41,4 +41,20 @@ export class MailService {
             throw error;
         }
     }
+
+    async sendUpdateProductEmail(oldProduct: Product, newProduct: Product) {
+        try {
+            await this.mailerService.sendMail({
+                to: this.adminEmails,
+                subject: 'Product Updated',
+                template: 'product/update-product.template.hbs', 
+                context: {
+                    oldProductData: oldProduct,
+                    newProductData: newProduct,
+                },
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
 }

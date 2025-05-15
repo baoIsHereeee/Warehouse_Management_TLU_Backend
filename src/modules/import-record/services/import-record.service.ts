@@ -10,13 +10,15 @@ import { Supplier } from '../../../modules/supplier/entities/supplier.entity';
 import { WarehouseDetail } from '../../../modules/warehouse/entities/warehouse-detail.entity';
 import { Product } from '../../../modules/product/entities/product.entity';
 import { MailService } from '../../../modules/mail/services/mail.service';
+import { UtilService } from '../../../modules/util/services/util.service';
 
 @Injectable()
 export class ImportRecordService {
     constructor(
         private importRepository: ImportRepository,
         private dataSource: DataSource,
-        private mailService: MailService
+        private mailService: MailService,
+        private utilService: UtilService
     ) {}
 
     async getAllImportRecords(options: IPaginationOptions, query?: string): Promise<Pagination<ImportRecord>> {
@@ -114,6 +116,9 @@ export class ImportRecordService {
         const importRecord = await this.importRepository.findOne({ where: { id }, relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'user', 'supplier'] });
         if (!importRecord) throw new NotFoundException(`Import with id ${id} not found! Please try again!`);
 
+        const oleWarehouseDetails: WarehouseDetail[] = [];
+        const newWarehouseDetails: WarehouseDetail[] = [];
+
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -126,10 +131,12 @@ export class ImportRecordService {
             const productRepository = queryRunner.manager.getRepository(Product);
 
             for (const importDetail of importRecord.importDetails) {
-                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: importDetail.product.id, warehouseId: importDetail.warehouse.id }, relations: ['product'] });
+                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: importDetail.product.id, warehouseId: importDetail.warehouse.id }, relations: ['product', 'warehouse'] });
                 if (productWarehouse) {
                     productWarehouse.quantity -= importDetail.quantity;
                     await warehouseDetailRepository.save(productWarehouse);
+
+                    oleWarehouseDetails.push(productWarehouse);
 
                     productWarehouse.product.currentStock -= importDetail.quantity;
                     await queryRunner.manager.save(productWarehouse.product);
@@ -139,13 +146,15 @@ export class ImportRecordService {
             await importDetailRepository.delete({ importRecord: { id } });
 
             for (const newImportDetail of updateData.importDetails) {
-                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: newImportDetail.productId, warehouseId: newImportDetail.warehouseId }, relations: ['product'] });
+                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: newImportDetail.productId, warehouseId: newImportDetail.warehouseId }, relations: ['product', 'warehouse'] });
                 if (productWarehouse) {
                     productWarehouse.quantity += newImportDetail.quantity;
                     await warehouseDetailRepository.save(productWarehouse);
 
                     productWarehouse.product.currentStock += newImportDetail.quantity;
                     await queryRunner.manager.save(productWarehouse.product);
+
+                    newWarehouseDetails.push(productWarehouse);
                 } else {
                     const products = await productRepository.findOne({ where: { id: newImportDetail.productId } });
                     if (!products) throw new NotFoundException(`Product with id ${newImportDetail.productId} not found! Please try again!`);
@@ -193,6 +202,8 @@ export class ImportRecordService {
         });
 
         this.mailService.sendUpdateImportEmail(importRecord, updatedImportRecord!);
+        this.utilService.alertMinimumStock(oleWarehouseDetails);
+        this.utilService.alertMinimumStock(newWarehouseDetails);
     }
 
     async deleteImportRecord(id: string) {

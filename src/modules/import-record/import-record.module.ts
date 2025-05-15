@@ -8,11 +8,12 @@ import { UserModule } from '../user/user.module';
 import { WarehouseModule } from '../warehouse/warehouse.module';
 import { ProductModule } from '../product/product.module';
 import { MailModule } from '../mail/mail.module';
+import { UtilModule } from '../util/util.module';
 
 @Module({
   controllers: [ImportRecordController],
   providers: [ImportRecordService, ImportRepository, ImportDetailRepository],
   exports: [ImportRepository, ImportDetailRepository],
-  imports: [SupplierModule, UserModule, WarehouseModule, ProductModule, MailModule]
+  imports: [SupplierModule, UserModule, WarehouseModule, ProductModule, MailModule, UtilModule]
 })
 export class ImportRecordModule {}

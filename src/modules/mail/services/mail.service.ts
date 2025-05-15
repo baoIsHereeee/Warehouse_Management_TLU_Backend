@@ -73,4 +73,19 @@ export class MailService {
         }
     }
 
+    async sendUpdateExportEmail(oldExport: ExportRecord, newExport: ExportRecord) {
+        try {
+            await this.mailerService.sendMail({
+                to: this.adminEmails,
+                subject: 'Export Updated',
+                template: 'export-record/update-export.template.hbs', 
+                context: {
+                    oldExportData: oldExport,
+                    newExportData: newExport,
+                },
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
 }

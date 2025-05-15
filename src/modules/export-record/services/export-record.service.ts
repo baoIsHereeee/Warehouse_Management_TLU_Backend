@@ -96,7 +96,7 @@ export class ExportService {
     }
 
     async updateExportRecord(id: string, updateData: UpdateExportDTO) {
-        const exportRecord = await this.exportRepository.findOne({ where: { id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse'] });
+        const exportRecord = await this.exportRepository.findOne({ where: { id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
         if (!exportRecord) throw new Error('Export record not found');
 
         if (!updateData.exportDetails) {
@@ -162,6 +162,9 @@ export class ExportService {
         } finally {
             await queryRunner.release();
         }
+
+        const updatedExportRecord = await this.exportRepository.findOne({ where: { id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
+        await this.mailService.sendUpdateExportEmail(exportRecord, updatedExportRecord!);
     }
 
     async deleteExportRecord(id: string) {

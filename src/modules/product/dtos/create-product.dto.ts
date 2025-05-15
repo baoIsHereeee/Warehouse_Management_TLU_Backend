@@ -14,11 +14,11 @@ export class CreateProductDTO {
     @IsOptional()
     image: string;
 
-    @IsNotEmpty()
-    @IsNumber()
-    @Transform(({ value }) => Number(value)) 
-    @Min(0)
-    currentStock: number;
+    // @IsNotEmpty()
+    // @IsNumber()
+    // @Transform(({ value }) => Number(value)) 
+    // @Min(0)
+    // currentStock: number;
 
     @IsNumber()
     @IsOptional()

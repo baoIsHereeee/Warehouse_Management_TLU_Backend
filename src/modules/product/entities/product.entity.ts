@@ -20,7 +20,7 @@ export class Product extends BaseEntity {
     @Column({ type: 'text', nullable: true })
     image: string;
 
-    @Column({ name: "current_stock" })
+    @Column({ name: "current_stock", default: 0 })
     currentStock: number;
 
     @Column({ nullable: true, default: null, name: "minimum_stock" })

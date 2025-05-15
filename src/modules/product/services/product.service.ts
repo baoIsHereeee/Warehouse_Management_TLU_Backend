@@ -46,7 +46,7 @@ export class ProductService {
 
         await this.mailService.sendCreateProductEmail(savedProduct);
 
-        return savedProduct;
+        return await this.productRepository.findOne({ where: { id: savedProduct.id }, relations: ['user', 'category'] });
     }
 
     async updateProduct(id: string, updateData: UpdateProductDTO) {

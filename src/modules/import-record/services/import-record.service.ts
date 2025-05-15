@@ -116,7 +116,7 @@ export class ImportRecordService {
         const importRecord = await this.importRepository.findOne({ where: { id }, relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'user', 'supplier'] });
         if (!importRecord) throw new NotFoundException(`Import with id ${id} not found! Please try again!`);
 
-        const oleWarehouseDetails: WarehouseDetail[] = [];
+        const oldWarehouseDetails: WarehouseDetail[] = [];
         const newWarehouseDetails: WarehouseDetail[] = [];
 
         const queryRunner = this.dataSource.createQueryRunner();
@@ -136,7 +136,7 @@ export class ImportRecordService {
                     productWarehouse.quantity -= importDetail.quantity;
                     await warehouseDetailRepository.save(productWarehouse);
 
-                    oleWarehouseDetails.push(productWarehouse);
+                    oldWarehouseDetails.push(productWarehouse);
 
                     productWarehouse.product.currentStock -= importDetail.quantity;
                     await queryRunner.manager.save(productWarehouse.product);
@@ -202,11 +202,13 @@ export class ImportRecordService {
         });
 
         this.mailService.sendUpdateImportEmail(importRecord, updatedImportRecord!);
-        this.utilService.alertMinimumStock(oleWarehouseDetails);
+        this.utilService.alertMinimumStock(oldWarehouseDetails);
         this.utilService.alertMinimumStock(newWarehouseDetails);
     }
 
     async deleteImportRecord(id: string) {
+        const warehouseDetails: WarehouseDetail[] = [];
+
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -220,13 +222,15 @@ export class ImportRecordService {
             if (!importRecord) throw new NotFoundException(`Import with id ${id} not found! Please try again!`);
 
             for (const importDetail of importRecord.importDetails) {
-                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: importDetail.product.id, warehouseId: importDetail.warehouse.id }, relations: ['product'] });
+                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: importDetail.product.id, warehouseId: importDetail.warehouse.id }, relations: ['product', 'warehouse'] });
                 if (productWarehouse) {
                     productWarehouse.quantity -= importDetail.quantity;
                     await warehouseDetailRepository.save(productWarehouse);
 
                     productWarehouse.product.currentStock -= importDetail.quantity;
                     await queryRunner.manager.save(productWarehouse.product);
+
+                    warehouseDetails.push(productWarehouse);
                 }
             }
 
@@ -240,5 +244,7 @@ export class ImportRecordService {
         } finally {
             await queryRunner.release();
         }
+
+        this.utilService.alertMinimumStock(warehouseDetails);
     }
 }

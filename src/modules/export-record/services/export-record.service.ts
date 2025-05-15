@@ -116,6 +116,8 @@ export class ExportService {
             return await this.exportRepository.update(id, newUpdateData);
         }
 
+        let warehouseDetails: WarehouseDetail[] = [];
+
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -144,6 +146,8 @@ export class ExportService {
                 if (newExportDetail.quantity > productWarehouse.quantity) throw new BadRequestException(`Quantity ${newExportDetail.quantity} exceeds available stock ${productWarehouse.product.currentStock} for ${productWarehouse.product.name}! Please try again!`);
                 productWarehouse.quantity -= newExportDetail.quantity;
                 await warehouDetailRepository.save(productWarehouse);
+
+                warehouseDetails.push(productWarehouse);
     
                 productWarehouse.product.currentStock -= newExportDetail.quantity;
                 await productRepository.save(productWarehouse.product);
@@ -172,6 +176,7 @@ export class ExportService {
 
         const updatedExportRecord = await this.exportRepository.findOne({ where: { id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
         this.mailService.sendUpdateExportEmail(exportRecord, updatedExportRecord!);
+        this.utilService.alertMinimumStock(warehouseDetails);
     }
 
     async deleteExportRecord(id: string) {

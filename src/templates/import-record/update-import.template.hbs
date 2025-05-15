@@ -1,0 +1,69 @@
+<h2>Import Record Updated</h2>
+
+<h3>Old Import Details</h3>
+
+{{!-- <p><strong>Created by:</strong> {{oldImportData.user.name}} ({{oldImportData.user.email}})</p> --}}
+
+{{#if oldImportData.supplier}}
+  <p><strong>Supplier:</strong> {{oldImportData.supplier.name}}</p>
+{{/if}}
+
+{{#if oldImportData.description}}
+  <p><strong>Old Description:</strong> {{oldImportData.description}}</p>
+{{/if}}
+
+<table border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+  <thead style="background-color: #f2f2f2;">
+    <tr>
+      <th>Product</th>
+      <th>Warehouse</th>
+      <th>Quantity</th>
+      <th>Import Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each oldImportData.importDetails}}
+      <tr>
+        <td>{{this.product.name}}</td>
+        <td>{{this.warehouse.name}}</td>
+        <td>{{this.quantity}}</td>
+        <td>{{this.importPrice}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<h3>New Import Details</h3>
+
+{{!-- <p><strong>Updated by:</strong> {{newImportData.user.name}} ({{newImportData.user.email}})</p> --}}
+
+{{#if newImportData.supplier}}
+  <p><strong>Supplier:</strong> {{newImportData.supplier.name}}</p>
+{{/if}}
+
+{{#if newImportData.description}}
+  <p><strong>New Description:</strong> {{newImportData.description}}</p>
+{{/if}}
+
+<table border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+  <thead style="background-color: #f2f2f2;">
+    <tr>
+      <th>Product</th>
+      <th>Warehouse</th>
+      <th>Quantity</th>
+      <th>Import Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each newImportData.importDetails}}
+      <tr>
+        <td>{{this.product.name}}</td>
+        <td>{{this.warehouse.name}}</td>
+        <td>{{this.quantity}}</td>
+        <td>{{this.importPrice}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<p>Warehouse Management System</p>

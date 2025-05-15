@@ -111,6 +111,9 @@ export class ImportRecordService {
     }
 
     async updateImportRecord(id: string, updateData: UpdateImportDTO) {
+        const importRecord = await this.importRepository.findOne({ where: { id }, relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'user', 'supplier'] });
+        if (!importRecord) throw new NotFoundException(`Import with id ${id} not found! Please try again!`);
+
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -121,9 +124,6 @@ export class ImportRecordService {
             const supplierRepository = queryRunner.manager.getRepository(Supplier);
             const warehouseDetailRepository = queryRunner.manager.getRepository(WarehouseDetail);
             const productRepository = queryRunner.manager.getRepository(Product);
-
-            const importRecord = await importRepository.findOne({ where: { id }, relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse'] });
-            if (!importRecord) throw new NotFoundException(`Import with id ${id} not found! Please try again!`);
 
             for (const importDetail of importRecord.importDetails) {
                 const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: importDetail.product.id, warehouseId: importDetail.warehouse.id }, relations: ['product'] });
@@ -186,6 +186,13 @@ export class ImportRecordService {
         } finally {
             await queryRunner.release();
         }
+
+        const updatedImportRecord = await this.importRepository.findOne({
+            where: { id },
+            relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'supplier', 'user'],
+        });
+
+        await this.mailService.sendUpdateImportEmail(importRecord, updatedImportRecord!);
     }
 
     async deleteImportRecord(id: string) {

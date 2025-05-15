@@ -104,4 +104,20 @@ export class MailService {
             throw error;
         }
     }
+
+    async sendUpdateImportEmail(oldImport: ImportRecord, newImport: ImportRecord) {
+        try {
+            await this.mailerService.sendMail({
+                to: this.adminEmails,
+                subject: 'Import Updated',
+                template: 'import-record/update-import.template.hbs', 
+                context: {
+                    oldImportData: oldImport,
+                    newImportData: newImport,
+                },
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
 }

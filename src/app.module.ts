@@ -22,6 +22,7 @@ import typeorm from './databases/typeorm';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from './modules/mail/mail.module';
+import { UtilModule } from './modules/util/util.module';
 
 @Module({
   imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, ReportModule, JwtModule, AuthModule, SeedsModule,
@@ -63,7 +64,8 @@ import { MailModule } from './modules/mail/mail.module';
       }),
       inject: [ConfigService],
     }),
-    MailModule
+    MailModule,
+    UtilModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,6 +4,7 @@ import { ExportRecord } from '../../../modules/export-record/entities/export.ent
 import { Product } from '../../../modules/product/entities/product.entity';
 import UserRepository from '../../../modules/user/repositories/user.repository';
 import { ImportRecord } from '../../../modules/import-record/entities/import.entity';
+import { WarehouseDetail } from '../../../modules/warehouse/entities/warehouse-detail.entity';
 
 @Injectable()
 export class MailService {
@@ -114,6 +115,21 @@ export class MailService {
                 context: {
                     oldImportData: oldImport,
                     newImportData: newImport,
+                },
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async alertMinimumStockEmail(warehouseDetail: WarehouseDetail){
+        try {
+            await this.mailerService.sendMail({
+                to: this.adminEmails,
+                subject: `Alert: Product ${warehouseDetail.product.name} in Warehouse ${warehouseDetail.warehouse.name} is below minimum stock level`,
+                template: 'product/minimum-stock.template.hbs', 
+                context: {
+                    warehouseDetailData: warehouseDetail
                 },
             });
         } catch (error) {

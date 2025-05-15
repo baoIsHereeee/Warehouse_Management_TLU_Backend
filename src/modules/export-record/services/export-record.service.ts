@@ -23,6 +23,7 @@ export class ExportService {
         private customerRepository: CustomerRepository,
         private dataSource: DataSource,
         private mailService: MailService,
+        private utilService: UtilService
     ) {}
 
     async getAllExportRecords(options: IPaginationOptions, query?: string): Promise<Pagination<ExportRecord>> {
@@ -47,6 +48,8 @@ export class ExportService {
 
         let savedExportRecord: ExportRecord;
 
+        let warehouseDetails: WarehouseDetail[] = [];
+
         try {
             const exportRepository = queryRunner.manager.getRepository(ExportRecord);
             const exportDetailRepository = queryRunner.manager.getRepository(ExportDetail);
@@ -65,6 +68,8 @@ export class ExportService {
             for (const exportDetail of createData.exportDetails) {
                 const productWarehouse = await warehouDetailRepository.findOne({ where: { productId: exportDetail.productId, warehouseId: exportDetail.warehouseId }, relations: ['product', 'warehouse'] }); 
                 if (!productWarehouse) throw new NotFoundException('Product not found in warehouse! Cannot create export record! Please try again!');
+
+                warehouseDetails.push(productWarehouse);
     
                 if (exportDetail.quantity > productWarehouse.quantity) throw new BadRequestException(`Quantity ${exportDetail.quantity} exceeds available stock ${productWarehouse.product.currentStock} for ${productWarehouse.product.name}! Please try again!`);
                 productWarehouse.quantity -= exportDetail.quantity;
@@ -94,6 +99,7 @@ export class ExportService {
 
         const fullExportRecord = await this.exportRepository.findOne({ where: { id: savedExportRecord.id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
         this.mailService.sendCreateExportEmail(fullExportRecord!);
+        this.utilService.alertMinimumStock(warehouseDetails);
     }
 
     async updateExportRecord(id: string, updateData: UpdateExportDTO) {

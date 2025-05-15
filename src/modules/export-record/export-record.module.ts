@@ -6,7 +6,6 @@ import ExportDetailRepository from './repositories/export-detail.repository';
 import { CustomerModule } from '../customer/customer.module';
 import { UserModule } from '../user/user.module';
 import { WarehouseModule } from '../warehouse/warehouse.module';
-import { Product } from '../product/entities/product.entity';
 import { ProductModule } from '../product/product.module';
 import { MailModule } from '../mail/mail.module';
 

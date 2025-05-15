@@ -107,7 +107,7 @@ export class ImportRecordService {
             where: { id: savedImportRecord.id},
             relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'supplier', 'user'],
         });
-        await this.mailService.sendCreateImportEmail(importRecord!);
+        this.mailService.sendCreateImportEmail(importRecord!);
     }
 
     async updateImportRecord(id: string, updateData: UpdateImportDTO) {
@@ -192,7 +192,7 @@ export class ImportRecordService {
             relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'supplier', 'user'],
         });
 
-        await this.mailService.sendUpdateImportEmail(importRecord, updatedImportRecord!);
+        this.mailService.sendUpdateImportEmail(importRecord, updatedImportRecord!);
     }
 
     async deleteImportRecord(id: string) {

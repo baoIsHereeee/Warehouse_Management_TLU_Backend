@@ -12,6 +12,7 @@ import { Customer } from '../../..//modules/customer/entities/customer.entity';
 import { WarehouseDetail } from '../../..//modules/warehouse/entities/warehouse-detail.entity';
 import { Product } from '../../../modules/product/entities/product.entity';
 import { MailService } from '../../..//modules/mail/services/mail.service';
+import { UtilService } from 'src/modules/util/services/util.service';
 
 @Injectable()
 export class ExportService {
@@ -21,7 +22,7 @@ export class ExportService {
         private userRepository: UserRepository,
         private customerRepository: CustomerRepository,
         private dataSource: DataSource,
-        private mailService: MailService
+        private mailService: MailService,
     ) {}
 
     async getAllExportRecords(options: IPaginationOptions, query?: string): Promise<Pagination<ExportRecord>> {
@@ -82,7 +83,7 @@ export class ExportService {
                 
                 await exportDetailRepository.save(newExportDetail);
             }
-
+            
             await queryRunner.commitTransaction();
         } catch (error) {
             await queryRunner.rollbackTransaction();
@@ -92,7 +93,7 @@ export class ExportService {
         }
 
         const fullExportRecord = await this.exportRepository.findOne({ where: { id: savedExportRecord.id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
-        await this.mailService.sendCreateExportEmail(fullExportRecord!);
+        this.mailService.sendCreateExportEmail(fullExportRecord!);
     }
 
     async updateExportRecord(id: string, updateData: UpdateExportDTO) {
@@ -164,7 +165,7 @@ export class ExportService {
         }
 
         const updatedExportRecord = await this.exportRepository.findOne({ where: { id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
-        await this.mailService.sendUpdateExportEmail(exportRecord, updatedExportRecord!);
+        this.mailService.sendUpdateExportEmail(exportRecord, updatedExportRecord!);
     }
 
     async deleteExportRecord(id: string) {

@@ -44,7 +44,7 @@ export class ProductService {
         
         const savedProduct = await this.productRepository.save(product);
 
-        await this.mailService.sendCreateProductEmail(savedProduct);
+        this.mailService.sendCreateProductEmail(savedProduct);
 
         return await this.productRepository.findOne({ where: { id: savedProduct.id }, relations: ['user', 'category'] });
     }
@@ -68,7 +68,7 @@ export class ProductService {
 
         const updatedProduct = await this.productRepository.findOne({ where: { id }, relations: ['user', 'category'] }) as Product;
 
-        await this.mailService.sendUpdateProductEmail(oldProduct, updatedProduct);
+        this.mailService.sendUpdateProductEmail(oldProduct, updatedProduct);
 
         return updatedProduct;
     }

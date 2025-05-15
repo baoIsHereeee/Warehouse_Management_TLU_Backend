@@ -1,0 +1,44 @@
+<h2>📤 A New Export Record Has Been Created! 📤</h2>
+
+<p>Here are the basic details of the export:</p>
+
+<ul>
+  {{#if exportData.description}}
+    <li><strong>Description:</strong> {{exportData.description}}</li>
+  {{/if}}
+
+  {{#if exportData.customer}}
+    <li><strong>Customer:</strong> {{exportData.customer.fullname}} ({{exportData.customer.email}})</li>
+  {{/if}}
+
+  {{#if exportData.user}}
+    <li><strong>Created By:</strong> {{exportData.user.fullname}} ({{exportData.user.email}})</li>
+  {{/if}}
+
+  <li><strong>Created At:</strong> {{exportData.createdAt}}</li>
+</ul>
+
+<h3>📦 Exported Products:</h3>
+
+<table border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+  <thead style="background-color: #f2f2f2;">
+    <tr>
+      <th>Product Name</th>
+      <th>Warehouse</th>
+      <th>Quantity</th>
+      <th>Selling Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each exportData.exportDetails}}
+      <tr>
+        <td>{{this.product.name}}</td>
+        <td>{{this.warehouse.name}}</td>
+        <td>{{this.quantity}}</td>
+        <td>{{this.sellingPrice}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<p>Warehouse Management System</p>

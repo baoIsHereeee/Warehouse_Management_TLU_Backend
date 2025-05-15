@@ -4,15 +4,14 @@ import ExportDetailRepository from '../repositories/export-detail.repository';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { ExportRecord } from '../entities/export.entity';
 import { CreateExportDTO, UpdateExportDTO } from '../dtos';
-import UserRepository from 'src/modules/user/repositories/user.repository';
-import CustomerRepository from 'src/modules/customer/repositories/customer.repository';
-import WarehouseDetailRepository from 'src/modules/warehouse/repositories/warehouse-detail.repository';
-import ProductRepository from 'src/modules/product/repositories/product.repository';
+import UserRepository from '../../..//modules/user/repositories/user.repository';
+import CustomerRepository from '../../..//modules/customer/repositories/customer.repository';
 import { DataSource } from 'typeorm';
 import { ExportDetail } from '../entities/export-detail.entity';
-import { Customer } from 'src/modules/customer/entities/customer.entity';
-import { WarehouseDetail } from 'src/modules/warehouse/entities/warehouse-detail.entity';
-import { Product } from 'src/modules/product/entities/product.entity';
+import { Customer } from '../../..//modules/customer/entities/customer.entity';
+import { WarehouseDetail } from '../../..//modules/warehouse/entities/warehouse-detail.entity';
+import { Product } from '../../../modules/product/entities/product.entity';
+import { MailService } from '../../..//modules/mail/services/mail.service';
 
 @Injectable()
 export class ExportService {
@@ -21,9 +20,8 @@ export class ExportService {
         private exportDetailRepository: ExportDetailRepository,
         private userRepository: UserRepository,
         private customerRepository: CustomerRepository,
-        private warehouDetailRepository: WarehouseDetailRepository,
-        private productRepository: ProductRepository,
-        private dataSource: DataSource
+        private dataSource: DataSource,
+        private mailService: MailService
     ) {}
 
     async getAllExportRecords(options: IPaginationOptions, query?: string): Promise<Pagination<ExportRecord>> {
@@ -46,6 +44,8 @@ export class ExportService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
+        let savedExportRecord: ExportRecord;
+
         try {
             const exportRepository = queryRunner.manager.getRepository(ExportRecord);
             const exportDetailRepository = queryRunner.manager.getRepository(ExportDetail);
@@ -59,7 +59,7 @@ export class ExportService {
                 description: createData.description,
             });
     
-            const savedExportRecord = await exportRepository.save(newExportRecord);
+            savedExportRecord = await exportRepository.save(newExportRecord);
     
             for (const exportDetail of createData.exportDetails) {
                 const productWarehouse = await warehouDetailRepository.findOne({ where: { productId: exportDetail.productId, warehouseId: exportDetail.warehouseId }, relations: ['product', 'warehouse'] }); 
@@ -90,6 +90,9 @@ export class ExportService {
         } finally {
             await queryRunner.release();
         }
+
+        const fullExportRecord = await this.exportRepository.findOne({ where: { id: savedExportRecord.id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
+        await this.mailService.sendCreateExportEmail(fullExportRecord!);
     }
 
     async updateExportRecord(id: string, updateData: UpdateExportDTO) {
@@ -112,7 +115,6 @@ export class ExportService {
 
         try {
             const exportDetailRepository = queryRunner.manager.getRepository(ExportDetail);
-            const customerRepository = queryRunner.manager.getRepository(Customer);
             const warehouDetailRepository = queryRunner.manager.getRepository(WarehouseDetail);
             const productRepository = queryRunner.manager.getRepository(Product);
 

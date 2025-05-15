@@ -8,10 +8,11 @@ import { UserModule } from '../user/user.module';
 import { WarehouseModule } from '../warehouse/warehouse.module';
 import { Product } from '../product/entities/product.entity';
 import { ProductModule } from '../product/product.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   controllers: [ExportRecordController],
   providers: [ExportRepository, ExportDetailRepository, ExportService],
-  imports: [UserModule, CustomerModule, WarehouseModule, ProductModule]
+  imports: [UserModule, CustomerModule, WarehouseModule, ProductModule, MailModule]
 })
 export class ExportRecordModule {}

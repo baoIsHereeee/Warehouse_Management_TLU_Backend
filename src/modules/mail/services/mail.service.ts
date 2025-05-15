@@ -1,8 +1,8 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
-import { get } from 'http';
-import { Product } from 'src/modules/product/entities/product.entity';
-import UserRepository from 'src/modules/user/repositories/user.repository';
+import { ExportRecord } from '../../../modules/export-record/entities/export.entity';
+import { Product } from '../../../modules/product/entities/product.entity';
+import UserRepository from '../../../modules/user/repositories/user.repository';
 
 @Injectable()
 export class MailService {
@@ -57,4 +57,20 @@ export class MailService {
             throw error;
         }
     }
+
+    async sendCreateExportEmail(exportRecord: ExportRecord) {
+        try {
+            await this.mailerService.sendMail({
+                to: this.adminEmails,
+                subject: 'Export Created',
+                template: 'export-record/create-export.template.hbs', 
+                context: {
+                    exportData: exportRecord,
+                },
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
 }

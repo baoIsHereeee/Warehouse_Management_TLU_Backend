@@ -1,25 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ImportRecord } from '../entities/import.entity';
 import ImportRepository from '../repositories/import.repository';
-import ImportDetailRepository from '../repositories/import-detail.repository';
 import { DataSource } from 'typeorm';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { CreateImportDTO, UpdateImportDTO } from '../dtos';
 import { ImportDetail } from '../entities/import-detail.entity';
-import UserRepository from '../../../modules/user/repositories/user.repository';
-import SupplierRepository from '../../../modules/supplier/repositories/customer.repository';
 import { User } from '../../../modules/user/entities/user.entity';
 import { Supplier } from '../../../modules/supplier/entities/supplier.entity';
 import { WarehouseDetail } from '../../../modules/warehouse/entities/warehouse-detail.entity';
-import WarehouseDetailRepository from '../../../modules/warehouse/repositories/warehouse-detail.repository';
-import { Product } from 'src/modules/product/entities/product.entity';
-import { NotFoundError } from 'rxjs';
+import { Product } from '../../../modules/product/entities/product.entity';
+import { MailService } from '../../../modules/mail/services/mail.service';
 
 @Injectable()
 export class ImportRecordService {
     constructor(
         private importRepository: ImportRepository,
         private dataSource: DataSource,
+        private mailService: MailService
     ) {}
 
     async getAllImportRecords(options: IPaginationOptions, query?: string): Promise<Pagination<ImportRecord>> {
@@ -45,6 +42,8 @@ export class ImportRecordService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
+        let savedImportRecord: ImportRecord;
+
         try {
             const importRepository = queryRunner.manager.getRepository(ImportRecord);
             const importDetailRepository = queryRunner.manager.getRepository(ImportDetail);
@@ -59,7 +58,7 @@ export class ImportRecordService {
                 user: await userRepository.findOne({ where: { id: createData.userId } }) as User
             });
 
-            const savedImportRecord = await importRepository.save(newImportRecord);
+            savedImportRecord = await importRepository.save(newImportRecord);
 
             for (const newImportDetail of createData.importDetails) {
                 const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: newImportDetail.productId, warehouseId: newImportDetail.warehouseId }, relations: ['product'] });
@@ -103,6 +102,12 @@ export class ImportRecordService {
         } finally {
             await queryRunner.release();
         }
+
+        const importRecord = await this.importRepository.findOne({
+            where: { id: savedImportRecord.id},
+            relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'supplier', 'user'],
+        });
+        await this.mailService.sendCreateImportEmail(importRecord!);
     }
 
     async updateImportRecord(id: string, updateData: UpdateImportDTO) {

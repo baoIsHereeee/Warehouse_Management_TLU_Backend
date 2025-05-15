@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ExportRecord } from '../../../modules/export-record/entities/export.entity';
 import { Product } from '../../../modules/product/entities/product.entity';
 import UserRepository from '../../../modules/user/repositories/user.repository';
+import { ImportRecord } from '../../../modules/import-record/entities/import.entity';
 
 @Injectable()
 export class MailService {
@@ -82,6 +83,21 @@ export class MailService {
                 context: {
                     oldExportData: oldExport,
                     newExportData: newExport,
+                },
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async sendCreateImportEmail(importRecord: ImportRecord) {
+        try {
+            await this.mailerService.sendMail({
+                to: this.adminEmails,
+                subject: 'Import Created',
+                template: 'import-record/create-import.template.hbs', 
+                context: {
+                    importData: importRecord,
                 },
             });
         } catch (error) {

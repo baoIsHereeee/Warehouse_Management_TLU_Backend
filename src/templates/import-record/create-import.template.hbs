@@ -1,0 +1,34 @@
+<h2>📤 New Import Record Created! 📤</h2>
+
+<p><strong>Created by:</strong> {{importData.user.fullname}} ({{importData.user.email}})</p>
+
+{{#if importData.supplier}}
+  <p><strong>Supplier:</strong> {{importData.supplier.fullname}} ({{importData.supplier.email}})</p>
+{{/if}}
+
+{{#if importData.description}}
+  <p><strong>Description:</strong> {{importData.description}}</p>
+{{/if}}
+
+<h3>Import Details:</h3>
+
+<table border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+  <thead style="background-color: #f2f2f2;">
+    <tr>
+      <th>Product</th>
+      <th>Warehouse</th>
+      <th>Quantity</th>
+      <th>Import Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each importData.importDetails}}
+      <tr>
+        <td>{{this.product.name}}</td>
+        <td>{{this.warehouse.name}}</td>
+        <td>{{this.quantity}}</td>
+        <td>{{this.importPrice}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

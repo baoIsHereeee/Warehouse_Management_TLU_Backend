@@ -22,6 +22,7 @@ export class CreateProductDTO {
 
     @IsNumber()
     @IsOptional()
+    @Transform(({ value }) => Number(value)) 
     @Min(0)
     minimumStock: number;
 

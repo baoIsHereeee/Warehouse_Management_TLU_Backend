@@ -1,8 +1,9 @@
-import { Body, Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UsePipes, ValidationPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ProductService } from './services/product.service';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { Product } from './entities/product.entity';
 import { CreateProductDTO, UpdateProductDTO } from './dtos';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('products')
 export class ProductController {
@@ -32,9 +33,13 @@ export class ProductController {
     }
 
     @Post()
+    @UseInterceptors(FileInterceptor('image'))
     @UsePipes(new ValidationPipe())
-    createProduct(@Body() createData: CreateProductDTO) {
-        return this.productService.createProduct(createData);
+    async createProduct(
+        @Body() createProductDto: CreateProductDTO,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return await this.productService.createProduct(createProductDto, file);
     }
 
     @Put(':id')

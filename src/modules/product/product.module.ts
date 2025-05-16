@@ -5,11 +5,12 @@ import ProductRepository from './repositories/product.repository';
 import { CategoryModule } from '../category/category.module';
 import { UserModule } from '../user/user.module';
 import { MailModule } from '../mail/mail.module';
+import { FirebaseModule } from '../firebase/firebase.module';
 
 @Module({
   controllers: [ProductController],
   providers: [ProductService, ProductRepository],
   exports: [ProductRepository],
-  imports: [forwardRef(() => CategoryModule), UserModule, MailModule],
+  imports: [forwardRef(() => CategoryModule), UserModule, MailModule, FirebaseModule],
 })
 export class ProductModule {}

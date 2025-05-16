@@ -144,35 +144,27 @@ export class ImportRecordService {
 
             // First get the import record with required relations
             const importRecord = await importRepository
-            .createQueryBuilder('import')
-            .innerJoinAndSelect('import.user', 'user')  // Keep only the required inner joins
-            .where('import.id = :id', { id })
-            .setLock('pessimistic_write')
-            .getOne();
+                .createQueryBuilder('import')
+                .innerJoinAndSelect('import.user', 'user')  // Keep only the required inner joins
+                .where('import.id = :id', { id })
+                .setLock('pessimistic_write')
+                .getOne();
 
             if (!importRecord) throw new NotFoundException(`Import with id ${id} not found! Please try again!`);
 
             // Then get the import details separately
             const oldImportDetails = await importDetailRepository
-            .createQueryBuilder('importDetail')
-            .innerJoinAndSelect('importDetail.product', 'product')
-            .innerJoinAndSelect('importDetail.warehouse', 'warehouse')
-            .where('importDetail.importRecord.id = :id', { id })
-            .getMany();
+                .createQueryBuilder('importDetail')
+                .innerJoinAndSelect('importDetail.product', 'product')
+                .innerJoinAndSelect('importDetail.warehouse', 'warehouse')
+                .where('importDetail.importRecord.id = :id', { id })
+                .getMany();
 
             importRecord.importDetails = oldImportDetails;
-            
-            if (!importRecord) throw new NotFoundException(`Import with id ${id} not found! Please try again!`);
-
-            const importSupplier = await importRepository.findOne({
-                where: { id },
-                relations: ['supplier'],
-              });
-            
+        
+            const importSupplier = await importRepository.findOne({ where: { id }, relations: ['supplier'] });
             importRecord.supplier = importSupplier!.supplier;
                       
-            if (!importRecord) throw new NotFoundException(`Import with id ${id} not found! Please try again!`);
-
             oldImportRecord = importRecord;
 
             for (const importDetail of importRecord.importDetails) {

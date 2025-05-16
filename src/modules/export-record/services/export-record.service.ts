@@ -117,8 +117,7 @@ export class ExportService {
     }
 
     async updateExportRecord(id: string, updateData: UpdateExportDTO) {
-        const exportRecord = await this.exportRepository.findOne({ where: { id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
-        if (!exportRecord) throw new Error('Export record not found');
+        let oldExportRecord: ExportRecord;
 
         if (!updateData.exportDetails) {
             const customer = await this.customerRepository.findOne({ where: { id: updateData.customerId } });
@@ -137,25 +136,50 @@ export class ExportService {
         await queryRunner.startTransaction('READ COMMITTED');
 
         try {
+            const exportRepository = queryRunner.manager.getRepository(ExportRecord);
             const exportDetailRepository = queryRunner.manager.getRepository(ExportDetail);
-            const warehouDetailRepository = queryRunner.manager.getRepository(WarehouseDetail);
+            const warehouseDetailRepository = queryRunner.manager.getRepository(WarehouseDetail);
             const productRepository = queryRunner.manager.getRepository(Product);
+
+            // First get the export record with lock
+            const exportRecord = await exportRepository
+                .createQueryBuilder('export')
+                .innerJoinAndSelect('export.user', 'user')  
+                .where('export.id = :id', { id })
+                .setLock('pessimistic_write')
+                .getOne();
+
+            if (!exportRecord) throw new NotFoundException(`Export with id ${id} not found! Please try again!`);
+
+            // Then get the export details separately
+            const oldExportDetails = await exportDetailRepository
+                .createQueryBuilder('exportDetail')
+                .innerJoinAndSelect('exportDetail.product', 'product')
+                .innerJoinAndSelect('exportDetail.warehouse', 'warehouse')
+                .where('exportDetail.exportRecord.id = :id', { id })
+                .getMany();
+
+            exportRecord.exportDetails = oldExportDetails;
+
+            const exportCustomer = await exportRepository.findOne({ where: { id }, relations: ['customer'] });
+            exportRecord.customer = exportCustomer!.customer;
+
+            oldExportRecord = exportRecord;
 
             for (const exportDetail of exportRecord.exportDetails) {
                 const product = await productRepository.findOne({ where: { id: exportDetail.product.id }, lock: { mode: 'pessimistic_write' } });
                 product!.currentStock += exportDetail.quantity;
                 await productRepository.save(product!);
     
-                const productWarehouse = await warehouDetailRepository.findOne({ where: { productId: exportDetail.product.id, warehouseId: exportDetail.warehouse.id }, lock: { mode: 'pessimistic_write' }});
+                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: exportDetail.product.id, warehouseId: exportDetail.warehouse.id }, lock: { mode: 'pessimistic_write' }});
                 productWarehouse!.quantity += exportDetail.quantity;
-                await warehouDetailRepository.save(productWarehouse!);
+                await warehouseDetailRepository.save(productWarehouse!);
             }
     
             await exportDetailRepository.createQueryBuilder().delete().from('export_details').where('export_record_id = :id', { id }).execute();
     
             for (const newExportDetail of updateData.exportDetails) {
-                // const productWarehouse = await warehouDetailRepository.findOne({ where: { productId: newExportDetail.productId, warehouseId: newExportDetail.warehouseId }, relations: ['product', 'warehouse'] });
-                const productWarehouse = await warehouDetailRepository
+                const productWarehouse = await warehouseDetailRepository
                     .createQueryBuilder('warehouseDetail')
                     .innerJoinAndSelect('warehouseDetail.product', 'product')
                     .innerJoinAndSelect('warehouseDetail.warehouse', 'warehouse')
@@ -168,7 +192,7 @@ export class ExportService {
     
                 if (newExportDetail.quantity > productWarehouse.quantity) throw new BadRequestException(`Quantity ${newExportDetail.quantity} exceeds available stock ${productWarehouse.product.currentStock} for ${productWarehouse.product.name}! Please try again!`);
                 productWarehouse.quantity -= newExportDetail.quantity;
-                await warehouDetailRepository.save(productWarehouse);
+                await warehouseDetailRepository.save(productWarehouse);
 
                 warehouseDetails.push(productWarehouse);
 
@@ -181,7 +205,7 @@ export class ExportService {
                 lockedProduct.currentStock -= newExportDetail.quantity;
                 await productRepository.save(lockedProduct);
     
-                const newExportDetailEntity = this.exportDetailRepository.create({
+                const newExportDetailEntity = exportDetailRepository.create({
                     exportRecord: exportRecord,
                     quantity: newExportDetail.quantity,
                     sellingPrice: newExportDetail.sellingPrice,
@@ -193,7 +217,7 @@ export class ExportService {
             }
     
             const { exportDetails, ...rest } = updateData;
-            await this.exportRepository.update(id, rest);
+            await exportRepository.update(id, rest);
 
             await queryRunner.commitTransaction();
         } catch (error) {
@@ -204,7 +228,7 @@ export class ExportService {
         }
 
         const updatedExportRecord = await this.exportRepository.findOne({ where: { id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
-        this.mailService.sendUpdateExportEmail(exportRecord, updatedExportRecord!);
+        this.mailService.sendUpdateExportEmail(oldExportRecord, updatedExportRecord!);
         this.utilService.alertMinimumStock(warehouseDetails);
     }
 

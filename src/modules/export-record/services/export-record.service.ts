@@ -134,7 +134,7 @@ export class ExportService {
 
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
-        await queryRunner.startTransaction();
+        await queryRunner.startTransaction('READ COMMITTED');
 
         try {
             const exportDetailRepository = queryRunner.manager.getRepository(ExportDetail);
@@ -142,11 +142,11 @@ export class ExportService {
             const productRepository = queryRunner.manager.getRepository(Product);
 
             for (const exportDetail of exportRecord.exportDetails) {
-                const product = await productRepository.findOne({ where: { id: exportDetail.product.id } });
+                const product = await productRepository.findOne({ where: { id: exportDetail.product.id }, lock: { mode: 'pessimistic_write' } });
                 product!.currentStock += exportDetail.quantity;
                 await productRepository.save(product!);
     
-                const productWarehouse = await warehouDetailRepository.findOne({ where: { productId: exportDetail.product.id, warehouseId: exportDetail.warehouse.id }});
+                const productWarehouse = await warehouDetailRepository.findOne({ where: { productId: exportDetail.product.id, warehouseId: exportDetail.warehouse.id }, lock: { mode: 'pessimistic_write' }});
                 productWarehouse!.quantity += exportDetail.quantity;
                 await warehouDetailRepository.save(productWarehouse!);
             }
@@ -154,7 +154,16 @@ export class ExportService {
             await exportDetailRepository.createQueryBuilder().delete().from('export_details').where('export_record_id = :id', { id }).execute();
     
             for (const newExportDetail of updateData.exportDetails) {
-                const productWarehouse = await warehouDetailRepository.findOne({ where: { productId: newExportDetail.productId, warehouseId: newExportDetail.warehouseId }, relations: ['product', 'warehouse'] });
+                // const productWarehouse = await warehouDetailRepository.findOne({ where: { productId: newExportDetail.productId, warehouseId: newExportDetail.warehouseId }, relations: ['product', 'warehouse'] });
+                const productWarehouse = await warehouDetailRepository
+                    .createQueryBuilder('warehouseDetail')
+                    .innerJoinAndSelect('warehouseDetail.product', 'product')
+                    .innerJoinAndSelect('warehouseDetail.warehouse', 'warehouse')
+                    .where('warehouseDetail.productId = :productId', { productId: newExportDetail.productId })
+                    .andWhere('warehouseDetail.warehouseId = :warehouseId', { warehouseId: newExportDetail.warehouseId })
+                    .setLock('pessimistic_write')
+                    .getOne();
+
                 if (!productWarehouse) throw new NotFoundException('Product not found in warehouse! Cannot update export record! Please try again!');
     
                 if (newExportDetail.quantity > productWarehouse.quantity) throw new BadRequestException(`Quantity ${newExportDetail.quantity} exceeds available stock ${productWarehouse.product.currentStock} for ${productWarehouse.product.name}! Please try again!`);
@@ -162,9 +171,15 @@ export class ExportService {
                 await warehouDetailRepository.save(productWarehouse);
 
                 warehouseDetails.push(productWarehouse);
+
+                const lockedProduct = await productRepository.findOne({
+                    where: { id: productWarehouse.product.id },
+                    lock: { mode: 'pessimistic_write' },
+                });
+                if (!lockedProduct) throw new NotFoundException('Product not found!');
     
-                productWarehouse.product.currentStock -= newExportDetail.quantity;
-                await productRepository.save(productWarehouse.product);
+                lockedProduct.currentStock -= newExportDetail.quantity;
+                await productRepository.save(lockedProduct);
     
                 const newExportDetailEntity = this.exportDetailRepository.create({
                     exportRecord: exportRecord,

@@ -42,7 +42,7 @@ export class ImportRecordService {
     async createImportRecord(createData: CreateImportDTO) {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
-        await queryRunner.startTransaction();
+        await queryRunner.startTransaction('READ COMMITTED');
 
         let savedImportRecord: ImportRecord;
 
@@ -63,16 +63,30 @@ export class ImportRecordService {
             savedImportRecord = await importRepository.save(newImportRecord);
 
             for (const newImportDetail of createData.importDetails) {
-                const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: newImportDetail.productId, warehouseId: newImportDetail.warehouseId }, relations: ['product'] });
+                // const productWarehouse = await warehouseDetailRepository.findOne({ where: { productId: newImportDetail.productId, warehouseId: newImportDetail.warehouseId }, relations: ['product'] });
+                const productWarehouse = await warehouseDetailRepository
+                    .createQueryBuilder('warehouseDetail')
+                    .innerJoinAndSelect('warehouseDetail.product', 'product')
+                    .where('warehouseDetail.productId = :productId', { productId: newImportDetail.productId })
+                    .andWhere('warehouseDetail.warehouseId = :warehouseId', { warehouseId: newImportDetail.warehouseId })
+                    .setLock('pessimistic_write')
+                    .getOne();
+
                 if (productWarehouse) {
                     productWarehouse.quantity += newImportDetail.quantity;
                     await warehouseDetailRepository.save(productWarehouse);
 
-                    productWarehouse.product.currentStock += newImportDetail.quantity;
-                    await queryRunner.manager.save(productWarehouse.product);
+                    const lockedProduct = await productRepository.findOne({ 
+                        where: { id: productWarehouse.product.id },
+                        lock: { mode: 'pessimistic_write' },
+                    });
+                    if (!lockedProduct) throw new NotFoundException('Product not found! Please try again!');
+
+                    lockedProduct.currentStock += newImportDetail.quantity;
+                    await productRepository.save(lockedProduct);
 
                 } else {
-                    const products = await productRepository.findOne({ where: { id: newImportDetail.productId } });
+                    const products = await productRepository.findOne({ where: { id: newImportDetail.productId }, lock: { mode: 'pessimistic_write' } });
                     if (!products) throw new NotFoundException(`Product with id ${newImportDetail.productId} not found! Please try again!`);
 
                     const newWarehouseDetail = warehouseDetailRepository.create({

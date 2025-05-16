@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import ProductRepository from '../repositories/product.repository';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { Product } from '../entities/product.entity';
@@ -50,8 +50,10 @@ export class ProductService {
     }
 
     async updateProduct(id: string, updateData: UpdateProductDTO) {
-        const product = await this.getProductById(id);
+        const product = await this.productRepository.findOne({ where: { id }, relations: ['exportDetails'] });
         if (!product) throw new NotFoundException('Product not found! Please try again!');
+
+        if (product.exportDetails.length > 0) throw new BadRequestException('This Product has already been exported! Cannot update information!');
 
         const oldProduct = { ...product };
 
@@ -74,8 +76,10 @@ export class ProductService {
     }
 
     async deleteProduct(id: string) {
-        const product = await this.getProductById(id);
+        const product = await this.productRepository.findOne({ where: { id }, relations: ['exportDetails'] });
         if (!product) throw new NotFoundException('Product not found! Please try again!');
+
+        if (product.exportDetails.length > 0) throw new BadRequestException('This Product has already been exported! Cannot delete product!');
 
         return await this.productRepository.softDelete(id);
     }

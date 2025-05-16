@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import WarehouseRepository from '../repositories/warehouse.repository';
 import WarehouseDetailRepository from '../repositories/warehouse-detail.repository';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
@@ -46,8 +46,10 @@ export class WarehouseService {
             const warehouseRepository = queryRunner.manager.getRepository(Warehouse);
             const warehouseDetailRepository = queryRunner.manager.getRepository(WarehouseDetail);
 
-            const warehouse = await warehouseRepository.findOne({ where: { id } });
+            const warehouse = await warehouseRepository.findOne({ where: { id }, relations: ['warehouseDetails'] });
             if (!warehouse) throw new NotFoundException('Warehouse not found');
+
+            if (warehouse.warehouseDetails.length > 0) throw new BadRequestException('This Warehouse has already been used! Cannot delete warehouse!');
 
             await warehouseDetailRepository.delete({ warehouseId: id });
             await warehouseRepository.softDelete(id);

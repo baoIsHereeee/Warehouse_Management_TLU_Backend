@@ -44,7 +44,7 @@ export class ExportService {
 
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
-        await queryRunner.startTransaction();
+        await queryRunner.startTransaction('READ COMMITTED');
 
         let savedExportRecord: ExportRecord;
 
@@ -66,17 +66,31 @@ export class ExportService {
             savedExportRecord = await exportRepository.save(newExportRecord);
     
             for (const exportDetail of createData.exportDetails) {
-                const productWarehouse = await warehouDetailRepository.findOne({ where: { productId: exportDetail.productId, warehouseId: exportDetail.warehouseId }, relations: ['product', 'warehouse'] }); 
+                const productWarehouse = await warehouDetailRepository
+                    .createQueryBuilder('warehouseDetail')
+                    .innerJoinAndSelect('warehouseDetail.product', 'product')
+                    .innerJoinAndSelect('warehouseDetail.warehouse', 'warehouse')
+                    .where('warehouseDetail.productId = :productId', { productId: exportDetail.productId })
+                    .andWhere('warehouseDetail.warehouseId = :warehouseId', { warehouseId: exportDetail.warehouseId })
+                    .setLock('pessimistic_write')
+                    .getOne();
+
                 if (!productWarehouse) throw new NotFoundException('Product not found in warehouse! Cannot create export record! Please try again!');
 
                 warehouseDetails.push(productWarehouse);
+
+                const lockedProduct = await productRepository.findOne({
+                    where: { id: productWarehouse.product.id },
+                    lock: { mode: 'pessimistic_write' },
+                });
+                if (!lockedProduct) throw new NotFoundException('Product not found!');
     
-                if (exportDetail.quantity > productWarehouse.quantity) throw new BadRequestException(`Quantity ${exportDetail.quantity} exceeds available stock ${productWarehouse.product.currentStock} for ${productWarehouse.product.name}! Please try again!`);
+                if (exportDetail.quantity > productWarehouse.quantity) throw new BadRequestException(`Quantity [${exportDetail.quantity}] exceeds available stock [${productWarehouse.product.currentStock}] for [${productWarehouse.product.name}]! Please try again!`);
                 productWarehouse.quantity -= exportDetail.quantity;
                 await warehouDetailRepository.save(productWarehouse);
     
-                productWarehouse.product.currentStock -= exportDetail.quantity;
-                await productRepository.save(productWarehouse.product);
+                lockedProduct.currentStock -= exportDetail.quantity;
+                await productRepository.save(lockedProduct);
                 
                 const newExportDetail = exportDetailRepository.create({
                     exportRecord: savedExportRecord,

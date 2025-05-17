@@ -22,6 +22,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from './modules/mail/mail.module';
 import { UtilModule } from './modules/util/util.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 
 @Module({
   imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, JwtModule, AuthModule, SeedsModule,
@@ -64,7 +65,8 @@ import { UtilModule } from './modules/util/util.module';
       inject: [ConfigService],
     }),
     MailModule,
-    UtilModule
+    UtilModule,
+    CloudinaryModule
   ],
   controllers: [AppController],
   providers: [AppService],

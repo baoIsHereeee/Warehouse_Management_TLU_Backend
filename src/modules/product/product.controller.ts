@@ -17,9 +17,9 @@ export class ProductController {
     getAllProducts(
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 5,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10,
     ): Promise<Pagination<Product>>{
-        limit = limit > 5 ? 5 : limit;
+        limit = limit > 10 ? 10 : limit;
         const options: IPaginationOptions = {
             page,
             limit,

@@ -29,6 +29,9 @@ export class Product extends BaseEntity {
     @Column({ type: "decimal", precision: 10, scale: 2, name: "selling_price" })
     sellingPrice: number;
 
+    @Column({ nullable: true, default: null, name: "order_stock" })
+    orderStock: number;
+
     @ManyToOne(() => Category, (category) => category.products)
     @JoinColumn({ name: "category_id" })
     category: Category | null;

@@ -32,6 +32,12 @@ export class CreateProductDTO {
     @Transform(({ value }) => Number(value))
     sellingPrice: number;
 
+    @IsNumber()
+    @IsOptional()
+    @Transform(({ value }) => Number(value)) 
+    @Min(0)
+    orderStock: number;
+
     @IsString()
     @IsOptional()
     categoryId: string;

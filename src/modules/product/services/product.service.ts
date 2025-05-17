@@ -6,7 +6,6 @@ import { CreateProductDTO, UpdateProductDTO } from '../dtos';
 import CategoryRepository from '../../../modules/category/repositories/category.repository';
 import UserRepository from '../../../modules/user/repositories/user.repository';
 import { MailService } from '../../../modules/mail/services/mail.service';
-import { FirebaseService } from '../../firebase/services/firebase.service';
 
 @Injectable()
 export class ProductService {
@@ -15,7 +14,6 @@ export class ProductService {
         private categoryRepository: CategoryRepository,
         private userRepository: UserRepository,
         private mailService: MailService,
-        private firebaseService: FirebaseService,
     ){}
 
     async getAllProducts(options: IPaginationOptions, query?: string): Promise<Pagination<Product>> {
@@ -34,26 +32,12 @@ export class ProductService {
         return product;
     }
 
-    async createProduct(createData: CreateProductDTO, file?: Express.Multer.File) {
+    async createProduct(createData: CreateProductDTO) {
         const currentUser = await this.userRepository.findOne({ where: { id: createData.userId } });
         if (!currentUser) throw new NotFoundException('User not found! Please try again!');
 
-        let imageUrl: string | undefined;
-
-        if (file) {
-            console.log('Uploading product image...');
-            try {
-                imageUrl = await this.firebaseService.uploadFile(file, 'products');
-            } catch (error) {
-                console.log(error);
-            }
-        } else {
-            console.log('No product image provided!');
-        }
-
         const product = this.productRepository.create({
             ...createData,
-            image: imageUrl,
             user: currentUser,
             category: createData.categoryId ? await this.categoryRepository.findOne({ where: { id: createData.categoryId } }) : null,
         });

@@ -37,13 +37,11 @@ export class ProductController {
 
     @Post()
     @Auth("create_product")
-    @UseInterceptors(FileInterceptor('image'))
     @UsePipes(new ValidationPipe())
     async createProduct(
-        @Body() createProductDto: CreateProductDTO,
-        @UploadedFile() file: Express.Multer.File,
+        @Body() createProductDto: CreateProductDTO
     ) {
-        return await this.productService.createProduct(createProductDto, file);
+        return await this.productService.createProduct(createProductDto);
     }
 
     @Put(':id')

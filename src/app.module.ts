@@ -22,7 +22,6 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from './modules/mail/mail.module';
 import { UtilModule } from './modules/util/util.module';
-import { FirebaseModule } from './modules/firebase/firebase.module';
 
 @Module({
   imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, JwtModule, AuthModule, SeedsModule,
@@ -65,8 +64,7 @@ import { FirebaseModule } from './modules/firebase/firebase.module';
       inject: [ConfigService],
     }),
     MailModule,
-    UtilModule,
-    FirebaseModule
+    UtilModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -9,10 +9,12 @@ import { WarehouseModule } from '../warehouse/warehouse.module';
 import { ProductModule } from '../product/product.module';
 import { MailModule } from '../mail/mail.module';
 import { UtilModule } from '../util/util.module';
+import { JwtModule } from '../jwt/jwt.module';
+import { PermissionModule } from '../permission/permission.module';
 
 @Module({
   controllers: [ExportRecordController],
   providers: [ExportRepository, ExportDetailRepository, ExportService],
-  imports: [UserModule, CustomerModule, WarehouseModule, ProductModule, MailModule, UtilModule]
+  imports: [UserModule, CustomerModule, WarehouseModule, ProductModule, MailModule, UtilModule, JwtModule, PermissionModule]
 })
 export class ExportRecordModule {}

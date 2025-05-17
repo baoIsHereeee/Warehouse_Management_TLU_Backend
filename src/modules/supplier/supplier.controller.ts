@@ -3,6 +3,7 @@ import { Body, Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, P
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { Supplier } from './entities/supplier.entity';
 import { CreateSupplierDTO, UpdateSupplierDTO } from './dtos';
+import { Auth } from '../../decorators/permission.decorator';
 
 @Controller('suppliers')
 export class SupplierController {
@@ -12,6 +13,7 @@ export class SupplierController {
 
 
     @Get()
+    @Auth("get_all_suppliers")
     getAllSuppliers(
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
@@ -28,23 +30,27 @@ export class SupplierController {
     }
 
     @Get(':id')
+    @Auth("get_supplier_by_id")
     async getSupplierById(@Param('id') id: string) {
         return this.supplierService.getSupplierById(id);
     }
 
     @Post()
+    @Auth("create_supplier")
     @UsePipes(new ValidationPipe())
     async createSupplier(@Body() createData: CreateSupplierDTO) {
         return this.supplierService.createSupplier(createData);
     }
 
     @Put(':id')
+    @Auth("update_supplier")
     @UsePipes(new ValidationPipe())
     async updateSupplier(@Param('id') id: string, @Body() updateData: UpdateSupplierDTO) {
         return this.supplierService.updateSupplier(id, updateData);
     }
 
     @Delete(':id')
+    @Auth("delete_supplier")
     async deleteSupplier(@Param('id') id: string) {
         return this.supplierService.deleteSupplier(id);
     }

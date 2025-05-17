@@ -78,4 +78,9 @@ export class RoleService {
             .of(role)
             .remove(permission);
     }
+
+    async getUserRoles(userId: string) {
+        const roles = await this.roleRepository.findBy({ users: { id: userId } });
+        return roles ? roles.map(role => role.id): [];
+    }
 }

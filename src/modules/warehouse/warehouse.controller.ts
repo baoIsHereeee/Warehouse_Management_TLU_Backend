@@ -3,6 +3,7 @@ import { WarehouseService } from './services/warehouse.service';
 import { CreateWarehouseDTO, UpdateWarehouseDTO } from './dtos';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { Warehouse } from './entities/warehouse.entity';
+import { Auth } from '../../decorators/permission.decorator';
 
 @Controller('warehouses')
 export class WarehouseController {
@@ -11,6 +12,7 @@ export class WarehouseController {
     ){}
 
     @Get()
+    @Auth("get_all_warehouses")
     getAllWarehouses(
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
@@ -27,23 +29,27 @@ export class WarehouseController {
     }
 
     @Get(':id')
+    @Auth("get_warehouse_by_id")
     async getWarehouseById(@Param('id') id: string) {
         return this.warehouseService.getWarehouseById(id);
     }
 
     @Post()
+    @Auth("create_warehouse")
     @UsePipes(new ValidationPipe())
     async createWarehouse(@Body() createData: CreateWarehouseDTO) {
         return this.warehouseService.createWarehouse(createData);
     }
 
     @Put(':id')
+    @Auth("update_warehouse")
     @UsePipes(new ValidationPipe())
     async updateWarehouse(@Param('id') id: string, @Body() updateData: UpdateWarehouseDTO) {
         return this.warehouseService.updateWarehouse(id, updateData);
     }
 
     @Delete(':id')
+    @Auth("delete_warehouse")
     async deleteWarehouse(@Param('id') id: string) {
         return this.warehouseService.deleteWarehouse(id);
     }

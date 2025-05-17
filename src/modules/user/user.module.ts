@@ -8,11 +8,12 @@ import UserRepository from './repositories/user.repository';
 import { RoleModule } from '../role/role.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '../jwt/jwt.module';
+import { PermissionModule } from '../permission/permission.module';
 
 @Module({
   controllers: [UserController],
   providers: [UserService, UserRepository],
-  imports: [ AuthModule, RoleModule, ConfigModule, JwtModule],
+  imports: [ AuthModule, RoleModule, ConfigModule, JwtModule, PermissionModule],
   exports: [UserRepository]
 })
 export class UserModule {}

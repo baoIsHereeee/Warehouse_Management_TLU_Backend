@@ -10,6 +10,7 @@ import UserRepository from '../repositories/user.repository';
 import RoleRepository from '../../role/repositories/role.repository';
 import { Role } from '../../role/entities/role.entity';
 import { JwtService } from '../../jwt/services/jwt.service';
+import { RoleService } from '../../../modules/role/services/role.service';
 
 @Injectable()
 export class UserService {
@@ -18,7 +19,8 @@ export class UserService {
         private authService: AuthService,
         private configService: ConfigService,
         private roleRepository: RoleRepository,
-        private jwtService: JwtService
+        private jwtService: JwtService,
+        private roleService: RoleService
     ) {}
 
     async getAllUsers(options: IPaginationOptions, query?: string): Promise<Pagination<User>> {
@@ -103,17 +105,19 @@ export class UserService {
     }
 
     async signIn(payload: SignInPayload) {
-        const user = await this.userRepository.findOne({ where: { email: payload.email} })
+        const user = await this.userRepository.findOne({ where: { email: payload.email}, relations: ['roles'] });
         if (!user) throw new NotFoundException("Email not exist! Please try again!");
 
         const checkPassword = await this.authService.comparePassword(payload.password, user.password);
         if(!checkPassword) throw new BadRequestException("Password is incorrect! Please try again!");
-        
+
+        const userRoles = await this.roleService.getUserRoles(user.id);
+
         const accessToken = this.jwtService.sign(
             {
                 id: user.id,
                 email: user.email,
-                roles: user.roles
+                roles: userRoles
             },
 
             this.configService.getOrThrow("ACCESS_SECRET_TOKEN"),
@@ -127,7 +131,7 @@ export class UserService {
             {
                 id: user.id,
                 email: user.email,
-                roles: user.roles
+                roles: userRoles
             },
 
             this.configService.getOrThrow("REFRESH_SECRET_TOKEN"),

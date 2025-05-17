@@ -3,6 +3,7 @@ import { CustomerService } from './services/customer.service';
 import { CreateCustomerDTO, UpdateCustomerDTO } from './dtos';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { Customer } from './entities/customer.entity';
+import { Auth } from '../../decorators/permission.decorator';
 
 @Controller('customers')
 export class CustomerController {
@@ -11,6 +12,7 @@ export class CustomerController {
     ){}
 
     @Get()
+    @Auth("get_all_customers")
     getAllCustomers(
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
@@ -27,23 +29,27 @@ export class CustomerController {
     }
 
     @Get(':id')
+    @Auth("get_customer_by_id")
     async getCustomerById(@Param('id') id: string) {
         return this.customerService.getCustomerById(id);
     }
 
     @Post()
+    @Auth("create_customer")
     @UsePipes(new ValidationPipe())
     async createCustomer(@Body() createData: CreateCustomerDTO) {
         return this.customerService.createCustomer(createData);
     }
 
     @Put(':id')
+    @Auth("update_customer")
     @UsePipes(new ValidationPipe())
     async updateCustomer(@Param('id') id: string, @Body() updateData: UpdateCustomerDTO) {
         return this.customerService.updateCustomer(id, updateData);
     }
 
     @Delete(':id')
+    @Auth("delete_customer")
     async deleteCustomer(@Param('id') id: string) {
         return this.customerService.deleteCustomer(id);
     }

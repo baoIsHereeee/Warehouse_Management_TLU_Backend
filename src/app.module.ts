@@ -11,7 +11,6 @@ import { ExportRecordModule } from './modules/export-record/export-record.module
 import { CustomerModule } from './modules/customer/customer.module';
 import { SupplierModule } from './modules/supplier/supplier.module';
 import { WarehouseModule } from './modules/warehouse/warehouse.module';
-import { ReportModule } from './modules/report/report.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from './modules/jwt/jwt.module';
@@ -26,7 +25,7 @@ import { UtilModule } from './modules/util/util.module';
 import { FirebaseModule } from './modules/firebase/firebase.module';
 
 @Module({
-  imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, ReportModule, JwtModule, AuthModule, SeedsModule,
+  imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, JwtModule, AuthModule, SeedsModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => (configService.get('typeorm') as TypeOrmModuleOptions)

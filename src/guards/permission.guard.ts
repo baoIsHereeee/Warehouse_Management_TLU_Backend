@@ -29,7 +29,7 @@ export class PermissionGuard implements CanActivate {
 
     const allowRoles = await this.permissionService.getPermissionRoles(requiredPermissions);
 
-    const hasPermission = userRoles.some(userRole =>
+    const hasPermission = userRoles.some((userRole: string) =>
       allowRoles.includes(userRole),
     );
 

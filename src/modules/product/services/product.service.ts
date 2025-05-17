@@ -19,7 +19,8 @@ export class ProductService {
     ){}
 
     async getAllProducts(options: IPaginationOptions, query?: string): Promise<Pagination<Product>> {
-        const queryBuilder = this.productRepository.createQueryBuilder('product');
+        const queryBuilder = this.productRepository.createQueryBuilder('product').leftJoinAndSelect('product.category', 'category'); 
+
 
         if (query) queryBuilder.where('LOWER(product.name) LIKE :query', { query: `%${query.toLowerCase()}%` });
 

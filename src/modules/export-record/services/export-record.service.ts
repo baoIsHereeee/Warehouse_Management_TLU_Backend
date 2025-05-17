@@ -85,7 +85,7 @@ export class ExportService {
                 });
                 if (!lockedProduct) throw new NotFoundException('Product not found!');
     
-                if (exportDetail.quantity > productWarehouse.quantity) throw new BadRequestException(`Quantity [${exportDetail.quantity}] exceeds available stock [${productWarehouse.product.currentStock}] for [${productWarehouse.product.name}]! Please try again!`);
+                if (exportDetail.quantity > productWarehouse.quantity) throw new BadRequestException(`Quantity [${exportDetail.quantity}] exceeds available stock [${productWarehouse.quantity}] for [${productWarehouse.product.name}]! Please try again!`);
                 productWarehouse.quantity -= exportDetail.quantity;
                 await warehouDetailRepository.save(productWarehouse);
     
@@ -190,7 +190,7 @@ export class ExportService {
 
                 if (!productWarehouse) throw new NotFoundException('Product not found in warehouse! Cannot update export record! Please try again!');
     
-                if (newExportDetail.quantity > productWarehouse.quantity) throw new BadRequestException(`Quantity ${newExportDetail.quantity} exceeds available stock ${productWarehouse.product.currentStock} for ${productWarehouse.product.name}! Please try again!`);
+                if (newExportDetail.quantity > productWarehouse.quantity) throw new BadRequestException(`Quantity ${newExportDetail.quantity} exceeds available stock ${productWarehouse.quantity} for ${productWarehouse.product.name}! Please try again!`);
                 productWarehouse.quantity -= newExportDetail.quantity;
                 await warehouseDetailRepository.save(productWarehouse);
 

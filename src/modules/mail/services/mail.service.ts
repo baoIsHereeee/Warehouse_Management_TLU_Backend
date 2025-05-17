@@ -136,4 +136,19 @@ export class MailService {
             throw error;
         }
     }
+
+    async automationOrderEmail(supplierEmail: string, warehouseDetail: WarehouseDetail) {
+        try {
+            await this.mailerService.sendMail({
+                to: supplierEmail,
+                subject: `📤 Automation Order for Product ${warehouseDetail.product.name} 📤`,
+                template: 'product/automation-order.template.hbs', 
+                context: {
+                    warehouseDetailData: warehouseDetail
+                },
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
 }

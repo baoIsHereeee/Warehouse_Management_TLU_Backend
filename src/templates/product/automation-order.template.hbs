@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Automation Order</title>
+</head>
+<body>
+  <p>Dear Supplier,</p>
+
+    <ul>
+        <li><strong>Warehouse:</strong> {{warehouseDetailData.warehouse.name}}</li>
+        <li><strong>Address:</strong> {{warehouseDetailData.warehouse.address}}</li>
+        <li><strong>Phone:</strong> {{warehouseDetailData.warehouse.phone}}</li>
+    </ul>
+
+  <p>We would like to inform you that the following warehouse requires a restock of the product listed below:</p>
+
+    <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px;">
+        <thead>
+            <tr style="background-color: #f2f2f2;">
+            <th align="left">Product Name</th>
+            <th align="left">Quantity to Restock</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+            <td>{{warehouseDetailData.product.name}}</td>
+            <td>{{warehouseDetailData.product.orderStock}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+  <p>Please proceed with the delivery at your earliest convenience to ensure uninterrupted supply.</p>
+
+  <p>Thank you for your cooperation.</p>
+
+  <p>Best regards,<br>
+  Warehouse Management System</p>
+</body>
+</html>

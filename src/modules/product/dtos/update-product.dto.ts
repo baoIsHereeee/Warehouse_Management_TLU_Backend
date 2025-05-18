@@ -31,6 +31,12 @@ export class UpdateProductDTO {
     @Min(0)
     sellingPrice: number;
 
+    @IsOptional()
+    @IsNumber()
+    @Transform(({ value }) => Number(value))
+    @Min(0)
+    orderStock: number;
+
     @IsString()
     @IsOptional()
     categoryId: string;

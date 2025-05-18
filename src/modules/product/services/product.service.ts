@@ -68,8 +68,8 @@ export class ProductService {
         const product = await this.productRepository.findOne({ where: { id }, relations: ['exportDetails'] });
         if (!product) throw new NotFoundException('Product not found! Please try again!');
 
-        if (product.exportDetails.length > 0) throw new BadRequestException('This Product has already been exported! Cannot update information!');
-
+        if (updateData.name) if (product.exportDetails.length > 0) throw new BadRequestException('This Product has already been exported! Cannot update information!');
+            
         const oldProduct = { ...product };
 
         if (file) {

@@ -13,19 +13,8 @@ export class CategoryController {
 
     @Get()
     @Auth("get_all_categories")
-    getAllCategories(
-        @Query('search') query: string, 
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 5,
-    ): Promise<Pagination<Category>>{
-        limit = limit > 5 ? 5 : limit;
-        const options: IPaginationOptions = {
-            page,
-            limit,
-            route: '/categories', 
-        };
-
-        return this.categoryService.getAllCategories(options, query);
+    getAllCategories() {
+        return this.categoryService.getAllCategories();
     }
     
     @Get(':id')

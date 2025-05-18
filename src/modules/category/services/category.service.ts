@@ -13,12 +13,8 @@ export class CategoryService {
     ){}
 
 
-    async getAllCategories(options: IPaginationOptions, query?: string): Promise<Pagination<Category>> {
-        const queryBuilder = this.categoryRepository.createQueryBuilder('category');
-
-        if (query) queryBuilder.where('LOWER(category.fullname) LIKE :query', { query: `%${query.toLowerCase()}%` });
-
-        return paginate<Category>(queryBuilder, options);
+    async getAllCategories() {
+        return await this.categoryRepository.find();
     }
 
     async getCategoryById(id: string) {

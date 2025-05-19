@@ -18,19 +18,19 @@ export class Product extends BaseEntity {
     description: string;
 
     @Column({ type: 'text', nullable: true })
-    image: string;
+    image: string | null;
 
     @Column({ name: "current_stock", default: 0 })
     currentStock: number;
 
-    @Column({ nullable: true, default: null, name: "minimum_stock" })
-    minimumStock: number;
+    @Column({ type: "integer", nullable: true, default: null, name: "minimum_stock" })
+    minimumStock: number | null;
 
     @Column({ type: "decimal", precision: 10, scale: 2, name: "selling_price" })
     sellingPrice: number;
 
-    @Column({ nullable: true, default: null, name: "order_stock" })
-    orderStock: number;
+    @Column({ type: "integer", nullable: true, default: null, name: "order_stock" })
+    orderStock: number | null;
 
     @ManyToOne(() => Category, (category) => category.products)
     @JoinColumn({ name: "category_id" })

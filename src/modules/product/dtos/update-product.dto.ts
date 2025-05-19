@@ -22,8 +22,9 @@ export class UpdateProductDTO {
 
     @IsNumber()
     @IsOptional()
+    @Transform(({ value }) => value === '' ? null : Number(value))
     @Min(0)
-    minimumStock: number;
+    minimumStock: number | null;
 
     @IsOptional()
     @IsNumber()
@@ -33,9 +34,9 @@ export class UpdateProductDTO {
 
     @IsOptional()
     @IsNumber()
-    @Transform(({ value }) => Number(value))
+    @Transform(({ value }) => value === '' ? null : Number(value))
     @Min(0)
-    orderStock: number;
+    orderStock: number | null;
 
     @IsString()
     @IsOptional()

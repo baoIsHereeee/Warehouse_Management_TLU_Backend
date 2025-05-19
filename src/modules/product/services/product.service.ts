@@ -84,6 +84,16 @@ export class ProductService {
             } catch (error) {
                 console.log("Failed to update product's image: ", error);
             }
+        } else if (updateData.image === '') {
+            if (product.image) {
+                try {
+                    const publicId = product.image.split('/').slice(-1)[0].split('.')[0];
+                    await this.cloudinaryService.deleteFile(publicId);
+                } catch (error) {
+                    console.log("Failed to delete old image: ", error);
+                }
+            }
+            product.image = null;
         }
 
         if (updateData.categoryId){
@@ -91,6 +101,12 @@ export class ProductService {
             if (!category) throw new NotFoundException('Category not found! Please try again!');
 
             product.category = category;
+            await this.productRepository.save(product);
+        }
+
+        if (updateData.minimumStock === null) {
+            product.minimumStock = null;
+            product.orderStock = null;
             await this.productRepository.save(product);
         }
 

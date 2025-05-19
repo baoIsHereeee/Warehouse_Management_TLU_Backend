@@ -38,7 +38,7 @@ export class ProductController {
     @Post()
     @Auth("create_product")
     @UseInterceptors(FileInterceptor('image'))
-    @UsePipes(new ValidationPipe())
+    @UsePipes(new ValidationPipe({ transform: true }))
     async createProduct(
         @Body() createProductDto: CreateProductDTO,
         @UploadedFile() file: Express.Multer.File,
@@ -49,7 +49,7 @@ export class ProductController {
     @Put(':id')
     @Auth("update_product")
     @UseInterceptors(FileInterceptor('image'))
-    @UsePipes(new ValidationPipe())
+    @UsePipes(new ValidationPipe({ transform: true }))
     updateProduct(@Param('id') id: string, @Body() updateData: UpdateProductDTO, @UploadedFile() file: Express.Multer.File,) {
         return this.productService.updateProduct(id, updateData, file);
     }

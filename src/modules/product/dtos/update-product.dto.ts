@@ -41,5 +41,6 @@ export class UpdateProductDTO {
 
     @IsString()
     @IsOptional()
-    categoryId: string;
+    @Transform(({ value }) => value === '' ? null : value)
+    categoryId: string | null;
 }

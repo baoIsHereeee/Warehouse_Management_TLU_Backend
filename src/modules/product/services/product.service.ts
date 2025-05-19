@@ -96,11 +96,14 @@ export class ProductService {
             product.image = null;
         }
 
-        if (updateData.categoryId){
-            const category = await this.categoryRepository.findOne({ where: { id: updateData.categoryId } });
-            if (!category) throw new NotFoundException('Category not found! Please try again!');
-
-            product.category = category;
+        if (updateData.categoryId !== undefined) {
+            if (updateData.categoryId === null) {
+                product.category = null;
+            } else {
+                const category = await this.categoryRepository.findOne({ where: { id: updateData.categoryId } });
+                if (!category) throw new NotFoundException('Category not found! Please try again!');
+                product.category = category;
+            }
             await this.productRepository.save(product);
         }
 

@@ -84,7 +84,7 @@ export class ProductService {
             } catch (error) {
                 console.log("Failed to update product's image: ", error);
             }
-        } else if (updateData.image === '') {
+        } else if (updateData.image === null) {
             if (product.image) {
                 try {
                     const publicId = product.image.split('/').slice(-1)[0].split('.')[0];

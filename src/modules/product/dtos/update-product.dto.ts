@@ -12,7 +12,8 @@ export class UpdateProductDTO {
 
     @IsString()
     @IsOptional()
-    image: string;
+    @Transform(({ value }) => value === '' ? null : value)
+    image: string | null;
 
     // @IsOptional()
     // @IsNumber()

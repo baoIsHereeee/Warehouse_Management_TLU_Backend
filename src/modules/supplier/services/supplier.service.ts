@@ -20,7 +20,7 @@ export class SupplierService {
     }
 
     async getSupplierById(id: string) {
-        return this.supplierRepository.findOne({ where: { id } });
+        return this.supplierRepository.findOne({ where: { id }, relations: ['importRecords'] });
     }
 
     async createSupplier(createData: CreateSupplierDTO) {

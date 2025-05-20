@@ -29,7 +29,9 @@ export class ExportService {
     async getAllExportRecords(options: IPaginationOptions, query?: string): Promise<Pagination<ExportRecord>> {
         const queryBuilder = this.exportRepository.createQueryBuilder('export');
 
-        if (query) queryBuilder.where('LOWER(export.id) LIKE :query', { query: `%${query.toLowerCase()}%` });
+        if (query) queryBuilder.where('LOWER(export.description) LIKE :query', { query: `%${query.toLowerCase()}%` });
+
+        queryBuilder.orderBy('export.updatedAt', 'DESC');
 
         return paginate<ExportRecord>(queryBuilder, options);
     }

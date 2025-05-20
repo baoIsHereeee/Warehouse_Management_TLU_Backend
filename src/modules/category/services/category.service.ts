@@ -4,6 +4,7 @@ import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginat
 import { Category } from '../entities/category.entity';
 import { BaseCategoryDTO } from '../dtos/base-category.dto';
 import ProductRepository from '../../../modules/product/repositories/product.repository';
+import { Not } from 'typeorm';
 
 @Injectable()
 export class CategoryService {
@@ -36,7 +37,7 @@ export class CategoryService {
         const category = await this.categoryRepository.findOne({ where: { id } });
         if (!category) throw new BadRequestException('Category not found! Please try again!');
 
-        const existeingCategory = await this.categoryRepository.findOne({ where: { name: updateData.name } });
+        const existeingCategory = await this.categoryRepository.findOne({ where: { name: updateData.name, id: Not(id) } });
         if (existeingCategory) throw new BadRequestException('Category already exists! Please try again!');
 
         return await this.categoryRepository.update(id, updateData);

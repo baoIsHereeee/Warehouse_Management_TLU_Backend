@@ -24,6 +24,10 @@ export class WarehouseService {
         return paginate<Warehouse>(queryBuilder, options);
     }
 
+    async getAllWarehouseList(){
+        return await this.warehouseRepository.find();
+    }
+
     async getWarehouseById(id: string) {
         return this.warehouseRepository.findOne({ where: { id }, relations: ['warehouseDetails', 'warehouseDetails.product'] });
     }

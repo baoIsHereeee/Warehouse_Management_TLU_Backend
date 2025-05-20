@@ -28,6 +28,12 @@ export class WarehouseController {
         return this.warehouseService.getAllWarehouses(options, query);
     }
 
+    @Get('list')
+    @Auth("get_all_warehouses")
+    getAllWarehouseList(){
+        return this.warehouseService.getAllWarehouseList();
+    }
+
     @Get(':id')
     @Auth("get_warehouse_by_id")
     async getWarehouseById(@Param('id') id: string) {

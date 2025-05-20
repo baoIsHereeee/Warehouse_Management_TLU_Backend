@@ -19,6 +19,10 @@ export class CustomerService {
         return paginate<Customer>(queryBuilder, options);
     }
 
+    async getAllCustomerList(){
+        return await this.customerRepository.find();
+    }
+
     async getCustomerById(id: string) {
         return this.customerRepository.findOne({ where: { id }, relations: ['exportRecords'] });
     }

@@ -28,6 +28,12 @@ export class CustomerController {
         return this.customerService.getAllCustomers(options, query);
     }
 
+    @Get('list')
+    @Auth("get_all_customers")
+    getAllCustomerList(){
+        return this.customerService.getAllCustomerList();
+    }
+
     @Get(':id')
     @Auth("get_customer_by_id")
     async getCustomerById(@Param('id') id: string) {

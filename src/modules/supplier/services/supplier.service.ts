@@ -12,7 +12,7 @@ export class SupplierService {
 
    
     async getAllSuppliers(options: IPaginationOptions, query?: string): Promise<Pagination<Supplier>> {
-        const queryBuilder = this.supplierRepository.createQueryBuilder('customer');
+        const queryBuilder = this.supplierRepository.createQueryBuilder('supplier');
 
         if (query) queryBuilder.where('LOWER(supplier.fullname) LIKE :query', { query: `%${query.toLowerCase()}%` });
 

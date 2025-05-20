@@ -29,6 +29,12 @@ export class ProductController {
         return this.productService.getAllProducts(options, query);
     }
 
+    @Get('list')
+    @Auth("get_all_products")
+    getAllProductList(){
+        return this.productService.getAllProductList();
+    }
+
     @Get(':id')
     @Auth("get_product_by_id")
     getProductById(@Param('id') id: string) {

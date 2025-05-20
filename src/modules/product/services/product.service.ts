@@ -27,6 +27,10 @@ export class ProductService {
         return paginate<Product>(queryBuilder, options);
     }
 
+    async getAllProductList(){
+        return await this.productRepository.find();
+    }
+
     async getProductById(id: string) {
         const product = await this.productRepository.findOne({ where: { id }, relations: ['user', 'category'] });
 

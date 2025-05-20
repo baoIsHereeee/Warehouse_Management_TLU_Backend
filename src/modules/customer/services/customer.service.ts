@@ -20,7 +20,7 @@ export class CustomerService {
     }
 
     async getCustomerById(id: string) {
-        return this.customerRepository.findOne({ where: { id } });
+        return this.customerRepository.findOne({ where: { id }, relations: ['exportRecords'] });
     }
 
     async createCustomer(createData: CreateCustomerDTO) {

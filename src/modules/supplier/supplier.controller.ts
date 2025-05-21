@@ -29,6 +29,12 @@ export class SupplierController {
         return this.supplierService.getAllSuppliers(options, query);
     }
 
+    @Get('list')
+    @Auth("get_all_suppliers")
+    async getSupplierList() {
+        return this.supplierService.getSupplierList();
+    }
+
     @Get(':id')
     @Auth("get_supplier_by_id")
     async getSupplierById(@Param('id') id: string) {

@@ -143,6 +143,7 @@ export class ImportRecordService {
             const supplierRepository = queryRunner.manager.getRepository(Supplier);
             const warehouseDetailRepository = queryRunner.manager.getRepository(WarehouseDetail);
             const productRepository = queryRunner.manager.getRepository(Product);
+            const userRepository = queryRunner.manager.getRepository(User);
 
             // First get the import record with required relations
             const importRecord = await importRepository
@@ -250,11 +251,13 @@ export class ImportRecordService {
                 await importDetailRepository.save(savedImportDetail);
             }
 
-            const { importDetails, supplierId, ...rest } = updateData;
+            const { importDetails, supplierId, userId, ...rest } = updateData;
             const supplier = updateData.supplierId ? await supplierRepository.findOne({ where: { id: updateData.supplierId } }) : null;
+            const user = await userRepository.findOne({ where: { id: updateData.userId } });
             await importRepository.update(id, {
                 ...rest,
                 supplier: supplier,
+                user: user!,
             });
 
             await queryRunner.commitTransaction();

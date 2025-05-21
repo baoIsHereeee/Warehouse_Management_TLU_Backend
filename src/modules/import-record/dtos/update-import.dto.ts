@@ -11,6 +11,10 @@ export class UpdateImportDTO {
     @IsString()
     supplierId: string;
 
+    @IsOptional()
+    @IsString()
+    userId: string;
+
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => ImportDetailDTO)

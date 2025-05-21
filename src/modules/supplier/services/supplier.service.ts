@@ -23,6 +23,10 @@ export class SupplierService {
         return this.supplierRepository.findOne({ where: { id }, relations: ['importRecords'] });
     }
 
+    async getSupplierList() {
+        return this.supplierRepository.find();
+    }
+
     async createSupplier(createData: CreateSupplierDTO) {
         const existingEmail = await this.supplierRepository.findOne({ where: { email: createData.email } });
         if (existingEmail) throw new BadRequestException('Supplier with this email already exists');

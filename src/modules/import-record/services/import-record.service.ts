@@ -26,6 +26,8 @@ export class ImportRecordService {
 
         if (query) queryBuilder.where('LOWER(import.id) LIKE :query', { query: `%${query.toLowerCase()}%` });
 
+        queryBuilder.orderBy('import.updatedAt', 'DESC');
+
         return paginate<ImportRecord>(queryBuilder, options);
     }
 

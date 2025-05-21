@@ -37,7 +37,7 @@ export class ExportService {
     }
 
     async getExportRecordById(id: string) {
-        return await this.exportRepository.findOne({ where: { id }, relations: ['exportDetails', 'exportDetails.product'] });
+        return await this.exportRepository.findOne({ where: { id }, relations: ['exportDetails', 'exportDetails.product', 'customer', 'exportDetails.warehouse', 'user'] });
     }
 
     async createExportRecord(createData: CreateExportDTO) {
@@ -120,16 +120,6 @@ export class ExportService {
 
     async updateExportRecord(id: string, updateData: UpdateExportDTO) {
         let oldExportRecord: ExportRecord;
-
-        if (!updateData.exportDetails) {
-            const customer = await this.customerRepository.findOne({ where: { id: updateData.customerId } });
-            if (!customer) throw new NotFoundException('Customer not found! Cannot update export record! Please try again!');
-
-            const { customerId, ...rest } = updateData;
-            const newUpdateData = { ...rest, customer };
-
-            return await this.exportRepository.update(id, newUpdateData);
-        }
 
         let warehouseDetails: WarehouseDetail[] = [];
 
@@ -217,8 +207,22 @@ export class ExportService {
     
                 await exportDetailRepository.save(newExportDetailEntity);
             }
-    
-            const { exportDetails, ...rest } = updateData;
+
+            const { exportDetails, customerId, userId, ...rest } = updateData;
+            if (customerId) {
+                const customer = await this.customerRepository.findOne({ where: { id: customerId } });
+                if (!customer) throw new NotFoundException('Customer not found! Cannot update export record! Please try again!');
+
+                await exportRepository.update(id, { customer });
+            }
+
+            if (userId) {
+                const user = await this.userRepository.findOne({ where: { id: userId } });
+                if (!user) throw new NotFoundException('User not found! Cannot update export record! Please try again!');
+
+                await exportRepository.update(id, { user });
+            }
+                
             await exportRepository.update(id, rest);
 
             await queryRunner.commitTransaction();

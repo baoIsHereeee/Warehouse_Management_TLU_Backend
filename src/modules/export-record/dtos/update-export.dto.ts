@@ -12,6 +12,10 @@ export class UpdateExportDTO {
     customerId: string;
 
     @IsOptional()
+    @IsString()
+    userId: string;
+
+    @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => ExportDetailDTO)

@@ -15,6 +15,7 @@ import { PermissionModule } from '../permission/permission.module';
 @Module({
   controllers: [ExportRecordController],
   providers: [ExportRepository, ExportDetailRepository, ExportService],
+  exports: [ExportRepository, ExportDetailRepository],
   imports: [UserModule, CustomerModule, WarehouseModule, ProductModule, MailModule, UtilModule, JwtModule, PermissionModule]
 })
 export class ExportRecordModule {}

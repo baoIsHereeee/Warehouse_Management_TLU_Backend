@@ -23,6 +23,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { MailModule } from './modules/mail/mail.module';
 import { UtilModule } from './modules/util/util.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { ReportModule } from './modules/report/report.module';
 
 @Module({
   imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, JwtModule, AuthModule, SeedsModule,
@@ -66,7 +67,8 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
     }),
     MailModule,
     UtilModule,
-    CloudinaryModule
+    CloudinaryModule,
+    ReportModule
   ],
   controllers: [AppController],
   providers: [AppService],

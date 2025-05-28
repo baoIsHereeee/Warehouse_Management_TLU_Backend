@@ -124,6 +124,23 @@ export const permissions: PermissionDefinition[] = [
     { name: "update_warehouse", description: "Allows updating an exist warehouse" },
     
     { name: "delete_warehouse", description: "Allows deleting a warehouse" },
+
+    // Report
+    { name: "get_inventory_distribution_by_category", description: "Allows retrieving inventory distribution by category" },
+
+    { name: "get_total_number_of_inventory", description: "Allows retrieving total number of inventory" },
+
+    { name: "get_total_value_of_inventory", description: "Allows retrieving total value of inventory" },
+
+    { name: "get_total_value_of_imports", description: "Allows retrieving total value of imports" },
+
+    { name: "get_total_value_of_exports", description: "Allows retrieving total value of exports" },
+
+    { name: "get_inventory_value_per_warehouse", description: "Allows retrieving inventory value per warehouse" },
+
+    { name: "get_total_inventory_per_warehouse", description: "Allows retrieving total inventory per warehouse" },
+
+    { name: "get_low_stock_products", description: "Allows retrieving low stock products" },
 ]
 
 export const roles: RoleDefinition[] = [
@@ -194,7 +211,15 @@ export const rolesPermissions = [
             "get_warehouse_by_id",
             "create_warehouse",
             "update_warehouse",
-            "delete_warehouse"
+            "delete_warehouse",
+            "get_inventory_distribution_by_category",
+            "get_total_number_of_inventory",
+            "get_total_value_of_inventory",
+            "get_total_value_of_imports",
+            "get_total_value_of_exports",
+            "get_inventory_value_per_warehouse",
+            "get_total_inventory_per_warehouse",
+            "get_low_stock_products",
           ]
     }, 
 

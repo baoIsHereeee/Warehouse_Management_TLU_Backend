@@ -3,6 +3,7 @@ import BaseEntity from "../../../databases/base.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "../../role/entities/role.entity";
 import { RolePermission } from "../../role/entities/role-permission.entity";
+import { UserRole } from "../../user/entities/user-role.entity";
 
 @Entity('tenants')
 export class Tenant extends BaseEntity {
@@ -20,4 +21,7 @@ export class Tenant extends BaseEntity {
 
     @OneToMany(() => RolePermission, (rolePermission) => rolePermission.tenant)
     rolePermissions: RolePermission[];
+
+    @OneToMany(() => UserRole, (userRole) => userRole.tenant)
+    userRoles: UserRole[];
 }

@@ -19,12 +19,13 @@ export class MailService {
     async onModuleInit() {
         const admins = await this.userRepository
             .createQueryBuilder('user')
-            .leftJoinAndSelect('user.roles', 'role')
+            .leftJoinAndSelect('user.userRoles', 'userRole')
+            .leftJoinAndSelect('userRole.role', 'role')
             .where('role.name = :roleName', { roleName: 'Admin' })
             .select(['user.email'])
             .getMany();
 
-            this.adminEmails = admins
+        this.adminEmails = admins
             .map(admin => admin.email)
             .filter((email): email is string => email !== null && email !== undefined);
     }

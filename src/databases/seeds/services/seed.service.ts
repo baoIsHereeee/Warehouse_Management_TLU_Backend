@@ -64,22 +64,22 @@ export class SeedService {
             console.log("Seeding Roles-Permissions Successful!");
         
             // Seeding Default Admin User 
-            const role = await this.roleRepository.findOneBy({ name: "Admin" });
-            if (role) {
-                for (const defaultUser of defaultUsers) {
-                    const existedUser = await this.userRepository.findOneBy({ email: defaultUser.email });
+            // const role = await this.roleRepository.findOneBy({ name: "Admin" });
+            // if (role) {
+            //     for (const defaultUser of defaultUsers) {
+            //         const existedUser = await this.userRepository.findOneBy({ email: defaultUser.email });
 
-                    if (!existedUser) {
-                        defaultUser.password = this.authService.hashPassword(defaultUser.password);
-                        const newDefaultUser = this.userRepository.create(defaultUser);
+            //         if (!existedUser) {
+            //             defaultUser.password = this.authService.hashPassword(defaultUser.password);
+            //             const newDefaultUser = this.userRepository.create(defaultUser);
             
-                        newDefaultUser.roles = [role];
-                        await this.userRepository.save(newDefaultUser);
-                    }
-                }
+            //             newDefaultUser.roles = [role];
+            //             await this.userRepository.save(newDefaultUser);
+            //         }
+            //     }
 
-                console.log("Seeding Default Admin Users Successful!");
-            }
+            //     console.log("Seeding Default Admin Users Successful!");
+            // }
     
         } catch (error) {
             throw error;

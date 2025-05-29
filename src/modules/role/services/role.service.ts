@@ -84,7 +84,7 @@ export class RoleService {
     }
 
     async getUserRoles(userId: string) {
-        const roles = await this.roleRepository.findBy({ users: { id: userId } });
+        const roles = await this.roleRepository.findBy({ userRoles: { userId } });
         return roles ? roles.map(role => role.id): [];
     }
 }

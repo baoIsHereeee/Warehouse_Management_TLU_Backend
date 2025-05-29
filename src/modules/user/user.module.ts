@@ -9,11 +9,12 @@ import { RoleModule } from '../role/role.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '../jwt/jwt.module';
 import { PermissionModule } from '../permission/permission.module';
+import UserRoleRepository from './repositories/user-role.repository';
 
 @Module({
   controllers: [UserController],
-  providers: [UserService, UserRepository],
+  providers: [UserService, UserRepository, UserRoleRepository],
   imports: [ AuthModule, RoleModule, ConfigModule, JwtModule, PermissionModule],
-  exports: [UserRepository]
+  exports: [UserRepository, UserRoleRepository]
 })
 export class UserModule {}

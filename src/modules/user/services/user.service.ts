@@ -11,6 +11,7 @@ import RoleRepository from '../../role/repositories/role.repository';
 import { Role } from '../../role/entities/role.entity';
 import { JwtService } from '../../jwt/services/jwt.service';
 import { RoleService } from '../../../modules/role/services/role.service';
+import UserRoleRepository from '../repositories/user-role.repository';
 
 @Injectable()
 export class UserService {
@@ -20,7 +21,8 @@ export class UserService {
         private configService: ConfigService,
         private roleRepository: RoleRepository,
         private jwtService: JwtService,
-        private roleService: RoleService
+        private roleService: RoleService,
+        private userRoleRepository: UserRoleRepository
     ) {}
 
     async getAllUsers(options: IPaginationOptions, query?: string): Promise<Pagination<User>> {
@@ -34,7 +36,7 @@ export class UserService {
     async getUserById(id: string) {
         const user = await this.userRepository.findOne({
             where: { id },
-            relations: ['roles']
+            relations: ['userRoles.role']
         });
         if (!user) throw new NotFoundException('User not found! Please try again!');
 
@@ -50,8 +52,9 @@ export class UserService {
         const hashedPassword = this.authService.hashPassword(createData.password);  
         newUser.password = hashedPassword;
 
-        const staffRole = await this.roleRepository.findOne({ where: { name: 'Staff' } }) as Role;
-        newUser.roles = [staffRole];
+        // ... Fix this after have tenant ...
+        // const staffRole = await this.roleRepository.findOne({ where: { name: 'Staff' } }) as Role;
+        // newUser.roles = [staffRole];
 
         return await this.userRepository.save(newUser);
     }
@@ -80,15 +83,17 @@ export class UserService {
 
     async addUserRole(roleId: string, userId: string) {
         const role = await this.roleRepository.findOne({ where: { id: roleId } });
-        const user = await this.userRepository.findOne({ where: { id: userId } });
+        const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['tenant'] });
 
         if (!role || !user) throw new NotFoundException("Role or User not found!");
 
-        return await this.roleRepository
-            .createQueryBuilder()
-            .relation(Role, 'users')
-            .of(role)
-            .add(user);
+        const newUserRole = this.userRoleRepository.create({
+            roleId: role.id,
+            userId: user.id,
+            tenant: user.tenant
+        });
+
+        return await this.userRoleRepository.save(newUserRole);
     }
 
     async removeUserRole(roleId: string, userId: string) {
@@ -97,15 +102,14 @@ export class UserService {
 
         if (!role || !user) throw new NotFoundException("Role or Usser not found!");
 
-        return await this.userRepository
-            .createQueryBuilder()
-            .relation(User, 'roles')
-            .of(user)
-            .remove(role);
+        return await this.userRoleRepository.delete({ roleId: role.id, userId: user.id });
     }
 
     async signIn(payload: SignInPayload) {
-        const user = await this.userRepository.findOne({ where: { email: payload.email}, relations: ['roles'] });
+        const user = await this.userRepository.findOne({ 
+            where: { email: payload.email}, 
+            relations: ['userRoles', 'userRoles.role'] 
+        });
         if (!user) throw new NotFoundException("Email not exist! Please try again!");
 
         const checkPassword = await this.authService.comparePassword(payload.password, user.password);

@@ -24,6 +24,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { UtilModule } from './modules/util/util.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { ReportModule } from './modules/report/report.module';
+import { TenantModule } from './modules/tenant/tenant.module';
 
 @Module({
   imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, JwtModule, AuthModule, SeedsModule,
@@ -68,7 +69,8 @@ import { ReportModule } from './modules/report/report.module';
     MailModule,
     UtilModule,
     CloudinaryModule,
-    ReportModule
+    ReportModule,
+    TenantModule
   ],
   controllers: [AppController],
   providers: [AppService],

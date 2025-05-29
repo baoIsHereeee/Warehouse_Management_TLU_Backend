@@ -11,7 +11,7 @@ export class CreateUserDTO {
      @IsNotEmpty()
      password: string;
 
-     @IsNotEmpty()
+     @IsOptional()
      @Transform(({ value }) => Number(value)) 
      age: number;
 }

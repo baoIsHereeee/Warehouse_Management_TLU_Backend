@@ -3,16 +3,19 @@ import RoleRepository from '../repositories/role.repository';
 import { BaseRoleDTO } from '../dtos/base-role.dto';
 import { Role } from '../entities/role.entity';
 import PermissionRepository from '../../permission/repositories/permission.repository';
+import RolePermissionRepository from '../repositories/role-permission.repository';
+
 @Injectable()
 export class RoleService {
     constructor(
         private roleRepository: RoleRepository,
-        private permissionRepository: PermissionRepository
+        private permissionRepository: PermissionRepository,
+        private rolePermissionRepository: RolePermissionRepository
     ){}
 
     async getAllRoles() {
         return await this.roleRepository.find({
-            relations: ['permissions'],
+            relations: ['rolePermissions.permission'],
         });
     }
 
@@ -22,7 +25,7 @@ export class RoleService {
         
         return await this.roleRepository.findOne({
             where: { id },
-            relations: ['users', 'permissions']
+            relations: ['users', 'rolePermissions.permission']
         });
     }
 
@@ -54,16 +57,18 @@ export class RoleService {
     }
 
     async addRolePermission(roleId: string, permissionId: number) {
-        const role = await this.roleRepository.findOne({ where: { id: roleId } });
+        const role = await this.roleRepository.findOne({ where: { id: roleId }, relations: ['tenant'] });
         const permission = await this.permissionRepository.findOne({ where: { id: permissionId } });
 
         if (!role || !permission) throw new NotFoundException("Role or Permission not found!");
 
-        return await this.roleRepository
-            .createQueryBuilder()
-            .relation(Role, 'permissions')
-            .of(role)
-            .add(permission);
+        const newRolePermission = this.rolePermissionRepository.create({
+            roleId: role.id,
+            permissionId: permission.id,
+            tenant: role.tenant
+        });
+
+        return await this.rolePermissionRepository.save(newRolePermission);
     }
 
     async removeRolePermission(roleId: string, permissionId: number){
@@ -72,11 +77,10 @@ export class RoleService {
 
         if (!role || !permission) throw new NotFoundException("Role or Permission not found!");
 
-        return await this.roleRepository
-            .createQueryBuilder()
-            .relation(Role, 'permissions')
-            .of(role)
-            .remove(permission);
+        const rolePermission = await this.rolePermissionRepository.findOne({ where: { roleId: role.id, permissionId: permission.id } });
+        if (!rolePermission) throw new NotFoundException("Role Permission not found!");
+
+        return await this.rolePermissionRepository.delete(rolePermission);
     }
 
     async getUserRoles(userId: string) {

@@ -14,9 +14,9 @@ export class PermissionService {
     async getPermissionRoles(requestPermission: string) {
         const permission = await this.permissionRepository.findOne({
             where: { name: requestPermission },
-            relations: ['roles']
+            relations: ['rolePermissions.role']
         });
 
-        return permission ? permission.roles.map(role => role.id) : [];
+        return permission ? permission.rolePermissions.map(rolePermission => rolePermission.role.id) : [];
     }
 }

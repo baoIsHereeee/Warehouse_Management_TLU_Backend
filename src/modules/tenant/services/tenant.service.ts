@@ -1,60 +1,99 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import TenantRepository from '../repositories/tenant.repository';
 import { CreateTenantDTO } from '../dtos/create-tenant.dto';
-import UserRepository from 'src/modules/user/repositories/user.repository';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../../auth/services/auth.service';
-import RoleRepository from 'src/modules/role/repositories/role.repository';
-
+import { DataSource } from 'typeorm';
+import { Tenant } from '../entities/tenant.entity';
+import { User } from '../../user/entities/user.entity';
+import { Role } from '../../role/entities/role.entity';
+import { Permission } from '../../permission/entities/permission.entity';
+import { rolesPermissions } from '../../../databases/seeds/seed.data';
+import { RolePermission } from '../../role/entities/role-permission.entity';
 @Injectable()
 export class TenantService {
     constructor(
-        private tenantRepository: TenantRepository,
-        private userRepository: UserRepository,
         private configService: ConfigService,
         private authService: AuthService,
-        private roleRepository: RoleRepository
+        private dataSource: DataSource
     ){}
 
     async createTenant(createData: CreateTenantDTO) {
-        // Convert Tenant Name
-        createData.name = createData.name.toLowerCase().replace(/\s+/g, '');
-        
-        const existingTenant = await this.tenantRepository.findOne({ where: { name: createData.name }});
-        if (existingTenant) throw new BadRequestException('Tenant already exists');
-        
-        const newTenant = this.tenantRepository.create(createData);
-        const savedTenant = await this.tenantRepository.save(newTenant);
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
 
-        const defaultRoles = ['Admin', 'Manager', 'Staff'];
-        for (const role of defaultRoles) {
-            const newRole = this.roleRepository.create({ name: role, tenant: savedTenant });
-            await this.roleRepository.save(newRole);
-        }
+        try {
+            // Convert Tenant Name
+            createData.name = createData.name.toLowerCase().replace(/\s+/g, '');
+            
+            const existingTenant = await queryRunner.manager.findOne(Tenant, { 
+                where: { name: createData.name }
+            });
 
-        const newDefaultAdminUser = this.userRepository.create({
-            fullname: `${createData.name} - Default Admin`,
-            email: `${createData.name}@example.com`,
-            password: this.authService.hashPassword(this.configService.get('DEFAULT_ADMIN_PASSWORD')!),
-            tenant: newTenant,
-        });
+            if (existingTenant) throw new BadRequestException('Tenant already exists');
+            
+            const newTenant = queryRunner.manager.create(Tenant, createData);
+            const savedTenant = await queryRunner.manager.save(newTenant);
 
-        const savedUser = await this.userRepository.save(newDefaultAdminUser);
+            const defaultRoles = ['Admin', 'Manager', 'Staff'];
+            for (const role of defaultRoles) {
+                const newRole = queryRunner.manager.create(Role, { 
+                    name: role, 
+                    tenant: savedTenant 
+                });
+                await queryRunner.manager.save(newRole);
+            }
 
-        return {
-            tenant: {
-                id: savedTenant.id,
-                name: savedTenant.name,
-            },
+            for (const role_permission of rolesPermissions) {
+                const role = await queryRunner.manager.findOne(Role, { where: { name: role_permission.role }, relations: ['rolePermissions.permission'] });
 
-            user:  { 
-                id: savedUser.id,
-                fullname: savedUser.fullname,
-                email: savedUser.email,
-                password: this.configService.get('DEFAULT_ADMIN_PASSWORD'),
-            },
+                if (role) {
+                    for (const permissionName of role_permission.permissions) {
+                        const permission = await queryRunner.manager.findOne(Permission, { where: { name: permissionName } });
+                        
+                        const rolePermission = queryRunner.manager.findOne(RolePermission, { where: { roleId: role.id, permissionId: permission!.id } });
 
-            message: "You may want to change the Information (Email, Password) after Sign In"
+                        if (!rolePermission) {
+                            const newRolePermission = queryRunner.manager.create(RolePermission, {
+                                roleId: role.id,
+                                permissionId: permission!.id
+                            });
+                            await queryRunner.manager.save(newRolePermission);
+                        }
+                    }
+                    await queryRunner.manager.save(role);
+                }
+            }
+
+            const newDefaultAdminUser = queryRunner.manager.create(User, {
+                fullname: `${createData.name} - Default Admin`,
+                email: `${createData.name}@example.com`,
+                password: this.authService.hashPassword(this.configService.get('DEFAULT_ADMIN_PASSWORD')!),
+                tenant: savedTenant,
+            });
+
+            const savedUser = await queryRunner.manager.save(newDefaultAdminUser);
+
+            await queryRunner.commitTransaction();
+
+            return {
+                tenant: {
+                    id: savedTenant.id,
+                    name: savedTenant.name,
+                },
+                user: { 
+                    id: savedUser.id,
+                    fullname: savedUser.fullname,
+                    email: savedUser.email,
+                    password: this.configService.get('DEFAULT_ADMIN_PASSWORD'),
+                },
+                message: "You may want to change the Information (Email, Password) after Sign In"
+            }
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            await queryRunner.release();
         }
     }
 }

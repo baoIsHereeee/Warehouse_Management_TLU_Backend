@@ -3,6 +3,7 @@ import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany
 import { User } from "../../user/entities/user.entity";
 import { Permission } from "../../permission/entities/permission.entity";
 import { Tenant } from "../../tenant/entities/tenant.entity";
+import { RolePermission } from "./role-permission.entity";
 
 @Entity({ name: "roles"})
 export class Role extends BaseEntity {
@@ -15,13 +16,8 @@ export class Role extends BaseEntity {
     @ManyToMany(() => User, (user) => user.roles, { onDelete: 'CASCADE' })
     users: User[];
 
-    @ManyToMany(() => Permission, (permission) => permission.roles, { onDelete: 'CASCADE' })    
-    @JoinTable({ 
-        name: "roles_permissions",
-        joinColumn: { name: 'role_id', referencedColumnName: 'id' }, 
-        inverseJoinColumn: { name: 'permission_id', referencedColumnName: 'id' }
-     })
-    permissions: Permission[];
+    @OneToMany(() => RolePermission, (rolePermission) => rolePermission.role)
+    rolePermissions: RolePermission[];
 
     @ManyToOne(() => Tenant, (tenant) => tenant.roles)
     @JoinColumn({ name: 'tenant_id' })

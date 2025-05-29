@@ -1,11 +1,11 @@
 import { Exclude } from "class-transformer";
 import BaseEntity from "../../../databases/base.entity";
-import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "../../role/entities/role.entity";
 import { Product } from "../../../modules/product/entities/product.entity";
 import { ExportRecord } from "../../../modules/export-record/entities/export.entity";
 import { ImportRecord } from "../../../modules/import-record/entities/import.entity";
-
+import { Tenant } from "../../../modules/tenant/entities/tenant.entity";
 
 @Entity({ name: "users" })
 export class User extends BaseEntity {
@@ -22,8 +22,8 @@ export class User extends BaseEntity {
     @Exclude()
     password: string
 
-    @Column({ type: 'int'})
-    age: number;
+    @Column({ type: 'int', nullable: true })
+    age: number | null;
 
     @ManyToMany(() => Role, (role) => role.users)
     @JoinTable({
@@ -41,4 +41,8 @@ export class User extends BaseEntity {
 
     @OneToMany(() => ImportRecord, (importRecord) => importRecord.user)
     importRecords: ImportRecord[];
+
+    @ManyToOne(() => Tenant, (tenant) => tenant.users)
+    @JoinColumn({ name: "tenant_id" })
+    tenant: Tenant;
 }

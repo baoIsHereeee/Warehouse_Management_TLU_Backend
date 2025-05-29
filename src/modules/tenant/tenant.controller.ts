@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, Body, UsePipes, ValidationPipe, Get, Query, Param } from '@nestjs/common';
 import { TenantService } from './services/tenant.service';
 import { CreateTenantDTO } from './dtos/create-tenant.dto';
 
@@ -7,6 +7,11 @@ export class TenantController {
     constructor(    
         private tenantService: TenantService
     ){}
+
+    @Get('check/:tenantName')
+    async checkTenant(@Param('tenantName') tenantName: string) {
+        return this.tenantService.checkTenant(tenantName);
+    }
 
     @Post()
     @UsePipes(new ValidationPipe())

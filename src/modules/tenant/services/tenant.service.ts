@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateTenantDTO } from '../dtos/create-tenant.dto';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../../auth/services/auth.service';
@@ -17,6 +17,14 @@ export class TenantService {
         private dataSource: DataSource
     ){}
 
+    async checkTenant(name: string) {
+        const existingTenant = await this.dataSource.manager.findOne(Tenant, { where: { name } });
+
+        if (existingTenant) return true;
+
+        throw new NotFoundException('Tenant not found! Please try again!');
+    }
+
     async createTenant(createData: CreateTenantDTO) {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -30,7 +38,7 @@ export class TenantService {
                 where: { name: createData.name }
             });
 
-            if (existingTenant) throw new BadRequestException('Tenant already exists');
+            if (existingTenant) throw new BadRequestException('Tenant already exists! Please try again!');
             
             const newTenant = queryRunner.manager.create(Tenant, createData);
             const savedTenant = await queryRunner.manager.save(newTenant);
@@ -46,7 +54,7 @@ export class TenantService {
 
             for (const role_permission of rolesPermissions) {
                 const role = await queryRunner.manager.findOne(Role, { where: { name: role_permission.role, tenant: { id: savedTenant.id } }});
-                
+
                 if (role) {
                     for (const permissionName of role_permission.permissions) {
                         const permission = await queryRunner.manager.findOne(Permission, { where: { name: permissionName } });

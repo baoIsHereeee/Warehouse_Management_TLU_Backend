@@ -45,23 +45,21 @@ export class TenantService {
             }
 
             for (const role_permission of rolesPermissions) {
-                const role = await queryRunner.manager.findOne(Role, { where: { name: role_permission.role }, relations: ['rolePermissions.permission'] });
-
+                const role = await queryRunner.manager.findOne(Role, { where: { name: role_permission.role, tenant: { id: savedTenant.id } }});
+                
                 if (role) {
                     for (const permissionName of role_permission.permissions) {
                         const permission = await queryRunner.manager.findOne(Permission, { where: { name: permissionName } });
                         
-                        const rolePermission = queryRunner.manager.findOne(RolePermission, { where: { roleId: role.id, permissionId: permission!.id } });
+                        const newRolePermission = queryRunner.manager.create(RolePermission, {
+                            roleId: role.id,
+                            permissionId: permission!.id,
+                            tenant: savedTenant
+                        });
 
-                        if (!rolePermission) {
-                            const newRolePermission = queryRunner.manager.create(RolePermission, {
-                                roleId: role.id,
-                                permissionId: permission!.id
-                            });
-                            await queryRunner.manager.save(newRolePermission);
-                        }
+                        await queryRunner.manager.save(newRolePermission);
+
                     }
-                    await queryRunner.manager.save(role);
                 }
             }
 

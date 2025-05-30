@@ -21,10 +21,12 @@ export class ImportRecordService {
         private utilService: UtilService
     ) {}
 
-    async getAllImportRecords(options: IPaginationOptions, query?: string): Promise<Pagination<ImportRecord>> {
+    async getAllImportRecords(options: IPaginationOptions, tenantId: string, query?: string): Promise<Pagination<ImportRecord>> {
         const queryBuilder = this.importRepository.createQueryBuilder('import');
 
-        if (query) queryBuilder.where('LOWER(import.id) LIKE :query', { query: `%${query.toLowerCase()}%` });
+        queryBuilder.where('import.tenant.id = :tenantId', { tenantId });
+
+        if (query) queryBuilder.andWhere('LOWER(import.id) LIKE :query', { query: `%${query.toLowerCase()}%` });
 
         queryBuilder.orderBy('import.updatedAt', 'DESC');
 
@@ -41,7 +43,7 @@ export class ImportRecordService {
         return importRecord;
     }
 
-    async createImportRecord(createData: CreateImportDTO) {
+    async createImportRecord(createData: CreateImportDTO, tenantId: string) {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction('READ COMMITTED');
@@ -58,8 +60,9 @@ export class ImportRecordService {
 
             const newImportRecord = importRepository.create({
                 description: createData.description,
-                supplier: createData.supplierId ? await supplierRepository.findOne({ where: { id: createData.supplierId } }) : null,
-                user: await userRepository.findOne({ where: { id: createData.userId } }) as User
+                supplier: createData.supplierId ? await supplierRepository.findOne({ where: { id: createData.supplierId, tenant: { id: tenantId } } }) : null,
+                user: await userRepository.findOne({ where: { id: createData.userId, tenant: { id: tenantId } } }) as User,
+                tenant: { id: tenantId }
             });
 
             savedImportRecord = await importRepository.save(newImportRecord);
@@ -95,6 +98,7 @@ export class ImportRecordService {
                         product: { id: newImportDetail.productId },
                         warehouse: { id: newImportDetail.warehouseId },
                         quantity: newImportDetail.quantity,
+                        tenant: { id: tenantId }
                     });
                     await warehouseDetailRepository.save(newWarehouseDetail);
                     
@@ -108,6 +112,7 @@ export class ImportRecordService {
                     product: { id: newImportDetail.productId },
                     warehouse: { id: newImportDetail.warehouseId },
                     importRecord: savedImportRecord,
+                    tenant: { id: tenantId }
                 });
 
                 await importDetailRepository.save(savedImportDetail);
@@ -128,7 +133,7 @@ export class ImportRecordService {
         this.mailService.sendCreateImportEmail(importRecord!);
     }
 
-    async updateImportRecord(id: string, updateData: UpdateImportDTO) {
+    async updateImportRecord(id: string, updateData: UpdateImportDTO, tenantId: string) {
         let oldImportRecord: ImportRecord;
         const oldWarehouseDetails: WarehouseDetail[] = [];
         const newWarehouseDetails: WarehouseDetail[] = [];
@@ -165,7 +170,7 @@ export class ImportRecordService {
 
             importRecord.importDetails = oldImportDetails;
         
-            const importSupplier = await importRepository.findOne({ where: { id }, relations: ['supplier'] });
+            const importSupplier = await importRepository.findOne({ where: { id, tenant: { id: tenantId } }, relations: ['supplier'] });
             importRecord.supplier = importSupplier!.supplier;
                       
             oldImportRecord = importRecord;
@@ -233,6 +238,7 @@ export class ImportRecordService {
                         product: { id: newImportDetail.productId },
                         warehouse: { id: newImportDetail.warehouseId },
                         quantity: newImportDetail.quantity,
+                        tenant: { id: tenantId }
                     });
                     await warehouseDetailRepository.save(newWarehouseDetail);
                     
@@ -246,6 +252,7 @@ export class ImportRecordService {
                     product: { id: newImportDetail.productId },
                     warehouse: { id: newImportDetail.warehouseId },
                     importRecord: importRecord,
+                    tenant: { id: tenantId }
                 });
 
                 await importDetailRepository.save(savedImportDetail);

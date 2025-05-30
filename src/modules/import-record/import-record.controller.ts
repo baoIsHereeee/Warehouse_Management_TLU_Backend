@@ -4,6 +4,7 @@ import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { ImportRecord } from './entities/import.entity';
 import { CreateImportDTO, UpdateImportDTO } from './dtos';
 import { Auth } from '../../decorators/permission.decorator';
+import { CurrentTenant } from 'src/decorators/current-tenant.decorator';
 
 @Controller('imports')
 export class ImportRecordController {
@@ -17,6 +18,7 @@ export class ImportRecordController {
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 5,
+        @CurrentTenant() tenantId: string
     ): Promise<Pagination<ImportRecord>>{
         limit = limit > 5 ? 5 : limit;
         const options: IPaginationOptions = {
@@ -25,7 +27,7 @@ export class ImportRecordController {
             route: '/imports', 
         };
 
-        return this.importService.getAllImportRecords(options, query);
+        return this.importService.getAllImportRecords(options, tenantId, query);
     }
 
     @Get(':id')
@@ -36,14 +38,14 @@ export class ImportRecordController {
 
     @Post()
     @Auth("create_import")
-    createImportRecord(@Body() createData: CreateImportDTO) {
-        return this.importService.createImportRecord(createData);
+    createImportRecord(@Body() createData: CreateImportDTO, @CurrentTenant() tenantId: string) {
+        return this.importService.createImportRecord(createData, tenantId);
     }
 
     @Put(':id')
     @Auth("update_import")
-    updateImportRecord(@Param('id') id: string, @Body() updateData: UpdateImportDTO) {
-        return this.importService.updateImportRecord(id, updateData);
+    updateImportRecord(@Param('id') id: string, @Body() updateData: UpdateImportDTO, @CurrentTenant() tenantId: string) {
+        return this.importService.updateImportRecord(id, updateData, tenantId);
     }
 
     @Delete(':id')

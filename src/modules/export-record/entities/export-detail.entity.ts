@@ -3,6 +3,7 @@ import { ExportRecord } from "./export.entity";
 import { Warehouse } from "../../../modules/warehouse/entities/warehouse.entity";
 import { Product } from "../../../modules/product/entities/product.entity";
 import BaseEntity from "../../../databases/base.entity";
+import { Tenant } from "../../tenant/entities/tenant.entity";
 
 @Entity({ name: "export_details" })
 export class ExportDetail extends BaseEntity {
@@ -26,4 +27,7 @@ export class ExportDetail extends BaseEntity {
     @ManyToOne(() => Warehouse, (warehouse) => warehouse.exportDetails)
     @JoinColumn({ name: "warehouse_id" })
     warehouse: Warehouse;
+
+    @ManyToOne(() => Tenant, (tenant) => tenant.exportDetails)
+    tenant: Tenant;
 }

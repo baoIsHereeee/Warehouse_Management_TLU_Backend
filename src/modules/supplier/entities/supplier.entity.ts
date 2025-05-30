@@ -1,6 +1,7 @@
 import { ImportRecord } from "../../../modules/import-record/entities/import.entity";
 import BaseEntity from "../../../databases/base.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+import { Tenant } from "../../tenant/entities/tenant.entity";
 
 @Entity({ name: "suppliers" })
 export class Supplier extends BaseEntity {
@@ -21,4 +22,7 @@ export class Supplier extends BaseEntity {
 
     @OneToMany(() => ImportRecord, (importRecord) => importRecord.supplier)
     importRecords: ImportRecord[];
+
+    @ManyToOne(() => Tenant, (tenant) => tenant.suppliers)
+    tenant: Tenant; 
 }

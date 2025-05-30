@@ -5,6 +5,7 @@ import { User } from "../../../modules/user/entities/user.entity";
 import { WarehouseDetail } from "../../../modules/warehouse/entities/warehouse-detail.entity";
 import { ExportDetail } from "../../../modules/export-record/entities/export-detail.entity";
 import { ImportDetail } from "../../../modules/import-record/entities/import-detail.entity";
+import { Tenant } from "../../tenant/entities/tenant.entity";
 
 @Entity({ name: "products" })
 export class Product extends BaseEntity {
@@ -48,4 +49,7 @@ export class Product extends BaseEntity {
 
     @OneToMany(() => ImportDetail, (importDetail) => importDetail.product)
     importDetails: ImportDetail[];
+
+    @ManyToOne(() => Tenant, (tenant) => tenant.products)
+    tenant: Tenant;
 }

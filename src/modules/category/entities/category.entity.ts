@@ -1,6 +1,7 @@
 import { Product } from "../../../modules/product/entities/product.entity";
 import BaseEntity from "../../../databases/base.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+import { Tenant } from "../../tenant/entities/tenant.entity";
 
 @Entity({ name: "categories" })
 export class Category extends BaseEntity {
@@ -15,4 +16,7 @@ export class Category extends BaseEntity {
 
     @OneToMany(() => Product, (product) => product.category)
     products: Product[];
+
+    @ManyToOne(() => Tenant, (tenant) => tenant.categories)
+    tenant: Tenant;
 }

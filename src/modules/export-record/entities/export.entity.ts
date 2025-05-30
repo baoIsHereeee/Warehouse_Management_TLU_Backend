@@ -3,6 +3,7 @@ import { ExportDetail } from "./export-detail.entity";
 import { User } from "../../../modules/user/entities/user.entity";
 import { Customer } from "../../../modules/customer/entities/customer.entity";
 import BaseEntity from "../../../databases/base.entity";
+import { Tenant } from "../../tenant/entities/tenant.entity";
 
 @Entity({ name: "exports" })
 export class ExportRecord extends BaseEntity {
@@ -22,4 +23,7 @@ export class ExportRecord extends BaseEntity {
     @ManyToOne(() => Customer, (customer) => customer.exportRecords)
     @JoinColumn({ name: "customer_id" })
     customer: Customer | null;
+
+    @ManyToOne(() => Tenant, (tenant) => tenant.exportRecords)
+    tenant: Tenant;
 }

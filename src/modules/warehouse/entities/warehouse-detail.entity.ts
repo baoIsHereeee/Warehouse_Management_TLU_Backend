@@ -1,6 +1,7 @@
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Warehouse } from "./warehouse.entity";
 import { Product } from "../../../modules/product/entities/product.entity";
+import { Tenant } from "../../tenant/entities/tenant.entity";
 
 @Entity({ name: "warehouse_details" })
 export class WarehouseDetail extends BaseEntity {
@@ -20,4 +21,7 @@ export class WarehouseDetail extends BaseEntity {
     @ManyToOne(() => Product, (product) => product.warehouseDetails)
     @JoinColumn({ name: "product_id" })
     product: Product;
+
+    @ManyToOne(() => Tenant, (tenant) => tenant.warehouseDetails)
+    tenant: Tenant;
 }

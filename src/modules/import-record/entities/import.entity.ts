@@ -3,6 +3,7 @@ import { User } from "../../../modules/user/entities/user.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ImportDetail } from "./import-detail.entity";
 import BaseEntity from "../../../databases/base.entity";
+import { Tenant } from "../../tenant/entities/tenant.entity";
 
 @Entity({ name: 'imports' })
 export class ImportRecord extends BaseEntity {
@@ -22,4 +23,7 @@ export class ImportRecord extends BaseEntity {
 
     @OneToMany(() => ImportDetail, (importDetail) => importDetail.importRecord)
     importDetails: ImportDetail[];
+
+    @ManyToOne(() => Tenant, (tenant) => tenant.importRecords)
+    tenant: Tenant;
 }

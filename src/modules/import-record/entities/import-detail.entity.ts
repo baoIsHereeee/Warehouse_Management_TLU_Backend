@@ -3,7 +3,7 @@ import { ImportRecord } from "./import.entity";
 import { Product } from "../../../modules/product/entities/product.entity";
 import { Warehouse } from "../../../modules/warehouse/entities/warehouse.entity";
 import BaseEntity from "../../../databases/base.entity";
-
+import { Tenant } from "../../tenant/entities/tenant.entity";
 @Entity({ name: 'import_details' })
 export class ImportDetail extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
@@ -26,4 +26,7 @@ export class ImportDetail extends BaseEntity {
     @ManyToOne(() => Warehouse, (warehouse) => warehouse.importDetails)
     @JoinColumn({ name: 'warehouse_id' })
     warehouse: Warehouse;
+
+    @ManyToOne(() => Tenant, (tenant) => tenant.importDetails)
+    tenant: Tenant;
 }

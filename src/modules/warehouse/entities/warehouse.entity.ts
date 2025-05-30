@@ -1,5 +1,5 @@
 import BaseEntity from "../../../databases/base.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
 import { WarehouseDetail } from "./warehouse-detail.entity";
 import { ExportDetail } from "../../../modules/export-record/entities/export-detail.entity";
 import { ImportDetail } from "../../../modules/import-record/entities/import-detail.entity";
@@ -29,5 +29,6 @@ export class Warehouse extends BaseEntity {
     importDetails: ImportDetail[];
 
     @ManyToOne(() => Tenant, (tenant) => tenant.warehouses)
+    @JoinColumn({ name: "tenant_id" })
     tenant: Tenant;
 }

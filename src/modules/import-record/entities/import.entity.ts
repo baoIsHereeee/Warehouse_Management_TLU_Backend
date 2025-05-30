@@ -25,5 +25,6 @@ export class ImportRecord extends BaseEntity {
     importDetails: ImportDetail[];
 
     @ManyToOne(() => Tenant, (tenant) => tenant.importRecords)
+    @JoinColumn({ name: "tenant_id" })
     tenant: Tenant;
 }

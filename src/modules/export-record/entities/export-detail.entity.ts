@@ -29,5 +29,6 @@ export class ExportDetail extends BaseEntity {
     warehouse: Warehouse;
 
     @ManyToOne(() => Tenant, (tenant) => tenant.exportDetails)
+    @JoinColumn({ name: "tenant_id" })
     tenant: Tenant;
 }

@@ -1,6 +1,6 @@
 import { ExportRecord } from "../../../modules/export-record/entities/export.entity";
 import BaseEntity from "../../../databases/base.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
 import { Tenant } from "../../tenant/entities/tenant.entity";
 
 @Entity({ name: "customers" })
@@ -24,5 +24,6 @@ export class Customer extends BaseEntity {
     exportRecords: ExportRecord[];
 
     @ManyToOne(() => Tenant, (tenant) => tenant.customers)
+    @JoinColumn({ name: "tenant_id" })
     tenant: Tenant; 
 }

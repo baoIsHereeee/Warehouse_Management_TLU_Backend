@@ -25,5 +25,6 @@ export class ExportRecord extends BaseEntity {
     customer: Customer | null;
 
     @ManyToOne(() => Tenant, (tenant) => tenant.exportRecords)
+    @JoinColumn({ name: "tenant_id" })
     tenant: Tenant;
 }

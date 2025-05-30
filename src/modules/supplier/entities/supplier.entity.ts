@@ -1,6 +1,6 @@
 import { ImportRecord } from "../../../modules/import-record/entities/import.entity";
 import BaseEntity from "../../../databases/base.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
 import { Tenant } from "../../tenant/entities/tenant.entity";
 
 @Entity({ name: "suppliers" })
@@ -24,5 +24,6 @@ export class Supplier extends BaseEntity {
     importRecords: ImportRecord[];
 
     @ManyToOne(() => Tenant, (tenant) => tenant.suppliers)
+    @JoinColumn({ name: "tenant_id" })
     tenant: Tenant; 
 }

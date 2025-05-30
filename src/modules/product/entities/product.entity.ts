@@ -51,5 +51,6 @@ export class Product extends BaseEntity {
     importDetails: ImportDetail[];
 
     @ManyToOne(() => Tenant, (tenant) => tenant.products)
+    @JoinColumn({ name: "tenant_id" })
     tenant: Tenant;
 }

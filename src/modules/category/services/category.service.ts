@@ -1,7 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import CategoryRepository from '../repositories/category.repository';
-import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
-import { Category } from '../entities/category.entity';
 import { BaseCategoryDTO } from '../dtos/base-category.dto';
 import ProductRepository from '../../../modules/product/repositories/product.repository';
 import { Not } from 'typeorm';
@@ -14,8 +12,8 @@ export class CategoryService {
     ){}
 
 
-    async getAllCategories() {
-        return await this.categoryRepository.find();
+    async getAllCategories(tenantId: string) {
+        return await this.categoryRepository.find({ where: { tenant: { id: tenantId } } });
     }
 
     async getCategoryById(id: string) {
@@ -25,19 +23,19 @@ export class CategoryService {
         return category;
     }
 
-    async createCategory(creataData: BaseCategoryDTO) {
-        const existeingCategory = await this.categoryRepository.findOne({ where: { name: creataData.name } });
+    async createCategory(creataData: BaseCategoryDTO, tenantId: string) {
+        const existeingCategory = await this.categoryRepository.findOne({ where: { name: creataData.name, tenant: { id: tenantId } } });
         if (existeingCategory) throw new BadRequestException('Category already exists! Please try again!');
 
-        const newCategory = this.categoryRepository.create(creataData);
+        const newCategory = this.categoryRepository.create({ ...creataData, tenant: { id: tenantId } });
         return await this.categoryRepository.save(newCategory);
     }
 
-    async updateCategory(id: string, updateData: BaseCategoryDTO) {
-        const category = await this.categoryRepository.findOne({ where: { id } });
+    async updateCategory(id: string, updateData: BaseCategoryDTO, tenantId: string) {
+        const category = await this.categoryRepository.findOne({ where: { id, tenant: { id: tenantId } } });
         if (!category) throw new BadRequestException('Category not found! Please try again!');
 
-        const existeingCategory = await this.categoryRepository.findOne({ where: { name: updateData.name, id: Not(id) } });
+        const existeingCategory = await this.categoryRepository.findOne({ where: { name: updateData.name, id: Not(id), tenant: { id: tenantId } } });
         if (existeingCategory) throw new BadRequestException('Category already exists! Please try again!');
 
         return await this.categoryRepository.update(id, updateData);

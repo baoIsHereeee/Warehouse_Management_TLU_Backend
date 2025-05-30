@@ -1,9 +1,8 @@
 import { Body, Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CategoryService } from './services/category.service';
-import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
-import { Category } from './entities/category.entity';
 import { BaseCategoryDTO } from './dtos/base-category.dto';
 import { Auth } from '../../decorators/permission.decorator';
+import { CurrentTenant } from 'src/decorators/current-tenant.decorator';
 
 @Controller('categories')
 export class CategoryController {
@@ -13,8 +12,8 @@ export class CategoryController {
 
     @Get()
     @Auth("get_all_categories")
-    getAllCategories() {
-        return this.categoryService.getAllCategories();
+    getAllCategories(@CurrentTenant() tenantId: string) {
+        return this.categoryService.getAllCategories(tenantId);
     }
     
     @Get(':id')
@@ -26,15 +25,15 @@ export class CategoryController {
     @Post()
     @Auth("create_category")
     @UsePipes(new ValidationPipe())
-    async createCategory(@Body() createData: BaseCategoryDTO) {
-        return this.categoryService.createCategory(createData);
+    async createCategory(@Body() createData: BaseCategoryDTO, @CurrentTenant() tenantId: string) {
+        return this.categoryService.createCategory(createData, tenantId);
     }
     
     @Put(':id')
     @Auth("update_category")
     @UsePipes(new ValidationPipe())
-    async updateCategory(@Param('id') id: string, @Body() updateData: BaseCategoryDTO) {
-        return this.categoryService.updateCategory(id, updateData);
+    async updateCategory(@Param('id') id: string, @Body() updateData: BaseCategoryDTO, @CurrentTenant() tenantId: string) {
+        return this.categoryService.updateCategory(id, updateData, tenantId);
     }
     
     @Delete(':id')

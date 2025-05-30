@@ -12,6 +12,7 @@ import { Role } from '../../role/entities/role.entity';
 import { JwtService } from '../../jwt/services/jwt.service';
 import { RoleService } from '../../../modules/role/services/role.service';
 import UserRoleRepository from '../repositories/user-role.repository';
+import  TenantRepository  from '../../tenant/repositories/tenant.repository';
 
 @Injectable()
 export class UserService {
@@ -22,13 +23,16 @@ export class UserService {
         private roleRepository: RoleRepository,
         private jwtService: JwtService,
         private roleService: RoleService,
-        private userRoleRepository: UserRoleRepository
+        private userRoleRepository: UserRoleRepository,
+        private tenantRepository: TenantRepository
     ) {}
 
-    async getAllUsers(options: IPaginationOptions, query?: string): Promise<Pagination<User>> {
+    async getAllUsers(options: IPaginationOptions, tenantId: string, query?: string): Promise<Pagination<User>> {
         const queryBuilder = this.userRepository.createQueryBuilder('user');
 
-        if (query) queryBuilder.where('LOWER(user.fullname) LIKE :query', { query: `%${query.toLowerCase()}%` });
+        queryBuilder.where('user.tenant.id = :tenantId', { tenantId });
+
+        if (query) queryBuilder.andWhere('LOWER(user.fullname) LIKE :query', { query: `%${query.toLowerCase()}%` });
 
         return paginate<User>(queryBuilder, options);
     }
@@ -105,10 +109,13 @@ export class UserService {
         return await this.userRoleRepository.delete({ roleId: role.id, userId: user.id });
     }
 
-    async signIn(payload: SignInPayload) {
+    async signIn(payload: SignInPayload, tenantName: string) {
+        const tenant = await this.tenantRepository.findOne({ where: { name: tenantName } });
+        if (!tenant) throw new NotFoundException("Store not found! Please try again!");
+
         const user = await this.userRepository.findOne({ 
-            where: { email: payload.email}, 
-            relations: ['userRoles', 'userRoles.role'] 
+            where: { email: payload.email, tenant: { name: tenantName } }, 
+            relations: ['userRoles', 'userRoles.role', 'tenant'] 
         });
         if (!user) throw new NotFoundException("Email not exist! Please try again!");
 
@@ -121,7 +128,8 @@ export class UserService {
             {
                 id: user.id,
                 email: user.email,
-                roles: userRoles
+                roles: userRoles,
+                tenant: user.tenant.id
             },
 
             this.configService.getOrThrow("ACCESS_SECRET_TOKEN"),
@@ -135,7 +143,8 @@ export class UserService {
             {
                 id: user.id,
                 email: user.email,
-                roles: userRoles
+                roles: userRoles,
+                tenant: user.tenant.id
             },
 
             this.configService.getOrThrow("REFRESH_SECRET_TOKEN"),
@@ -147,7 +156,7 @@ export class UserService {
         
         return {
             accessToken: accessToken,
-            refreshToken: refreshToken
+            refreshToken: refreshToken,
         }
     }
 

@@ -4,6 +4,7 @@ import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { User } from './entities/user.entity';
 import { CreateUserDTO, SignInPayload, UpdateUserDTO } from './dtos';
 import { Auth } from '../../decorators/permission.decorator';
+import { CurrentTenant } from '../../decorators/current-tenant.decorator';
 
 @Controller()
 export class UserController {
@@ -11,10 +12,10 @@ export class UserController {
         private userService: UserService
     ) {}
 
-    @Post('sign-in')
+    @Post('sign-in/:tenantName')
     @UsePipes(new ValidationPipe())
-    signIn(@Body() payload: SignInPayload) {
-        return this.userService.signIn(payload);
+    signIn(@Body() payload: SignInPayload, @Param('tenantName') tenantName: string) {
+        return this.userService.signIn(payload, tenantName);
     }
 
     @Get("users")
@@ -23,6 +24,7 @@ export class UserController {
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 5,
+        @CurrentTenant() tenantId: string
     ): Promise<Pagination<User>>{
         limit = limit > 5 ? 5 : limit;
         const options: IPaginationOptions = {
@@ -31,7 +33,7 @@ export class UserController {
             route: '/users', 
         };
 
-        return this.userService.getAllUsers(options, query);
+        return this.userService.getAllUsers(options, tenantId, query);
     }
 
     @Get("users/:id")

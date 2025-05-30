@@ -26,7 +26,7 @@ export class ImportRecordService {
 
         queryBuilder.where('import.tenant.id = :tenantId', { tenantId });
 
-        if (query) queryBuilder.andWhere('LOWER(import.id) LIKE :query', { query: `%${query.toLowerCase()}%` });
+        if (query) queryBuilder.andWhere('LOWER(import.description) LIKE :query', { query: `%${query.toLowerCase()}%` });
 
         queryBuilder.orderBy('import.updatedAt', 'DESC');
 

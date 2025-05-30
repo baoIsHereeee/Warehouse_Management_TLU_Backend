@@ -13,30 +13,30 @@ export class ReportService {
         private warehouseDetailRepository: WarehouseDetailRepository
     ){}
 
-    async getTotalNumberOfInventory(){
-        const products = await this.productRepository.find();
+    async getTotalNumberOfInventory(tenantId: string){
+        const products = await this.productRepository.find({ where: { tenant: { id: tenantId } } });
         return products.length;
     }
 
-    async getTotalValueOfInventory(){
-        const products = await this.productRepository.find();   
+    async getTotalValueOfInventory(tenantId: string){
+        const products = await this.productRepository.find({ where: { tenant: { id: tenantId } } });
         const totalValue = products.reduce((acc, product) => acc + product.sellingPrice * product.currentStock, 0);
         return Number(totalValue.toFixed(2));
     }
 
-    async getTotalValueOfImports(){
-        const imports = await this.importDetailRepository.find();
+    async getTotalValueOfImports(tenantId: string){
+        const imports = await this.importDetailRepository.find({ where: { tenant: { id: tenantId } } });
         const totalValue = imports.reduce((acc, importDetail) => acc + importDetail.importPrice * importDetail.quantity, 0);
         return Number(totalValue.toFixed(2));
     }
 
-    async getTotalValueOfExports(){
-        const exports = await this.exportDetailRepository.find();
+    async getTotalValueOfExports(tenantId: string){
+        const exports = await this.exportDetailRepository.find({ where: { tenant: { id: tenantId } } });
         const totalValue = exports.reduce((acc, exportDetail) => acc + exportDetail.sellingPrice * exportDetail.quantity, 0);
         return Number(totalValue.toFixed(2));
     }
 
-    async getInventoryValuePerWarehouse() {
+    async getInventoryValuePerWarehouse(tenantId: string) {
         const result = await this.warehouseDetailRepository
         .createQueryBuilder("wd")
         .select("wd.warehouseId", "warehouseId")
@@ -46,6 +46,7 @@ export class ReportService {
         .innerJoin("wd.product", "p")
         .groupBy("wd.warehouseId")
         .addGroupBy("w.name")
+        .andWhere("wd.tenant.id = :tenantId", { tenantId })
         .getRawMany();
 
         return result.map((r) => ({
@@ -55,7 +56,7 @@ export class ReportService {
         }));
     }
 
-    async getTotalInventoryPerWarehouse() {
+    async getTotalInventoryPerWarehouse(tenantId: string) {
         const result = await this.warehouseDetailRepository
             .createQueryBuilder("wd")
             .select("wd.warehouseId", "warehouseId")
@@ -64,6 +65,7 @@ export class ReportService {
             .innerJoin("wd.warehouse", "w")
             .groupBy("wd.warehouseId")
             .addGroupBy("w.name")
+            .andWhere("wd.tenant.id = :tenantId", { tenantId })
             .getRawMany();
 
         return result.map((r) => ({
@@ -73,15 +75,16 @@ export class ReportService {
         }));
     }
 
-    async getLowStockProducts() {
+    async getLowStockProducts(tenantId: string) {
         return await this.productRepository
           .createQueryBuilder("product")
           .where("product.minimumStock IS NOT NULL")
           .andWhere("product.currentStock <= product.minimumStock")
+          .andWhere("product.tenant.id = :tenantId", { tenantId })
           .getMany();
     }
 
-    async getInventoryDistributionByCategory() {
+    async getInventoryDistributionByCategory(tenantId: string) {
         const warehouseDetails = await this.warehouseDetailRepository
             .createQueryBuilder('wd')
             .select('w.id', 'warehouseId')
@@ -92,6 +95,7 @@ export class ReportService {
             .innerJoin('wd.warehouse', 'w')
             .innerJoin('wd.product', 'p')
             .innerJoin('p.category', 'c')
+            .andWhere("p.tenant.id = :tenantId", { tenantId })
             .groupBy('w.id')
             .addGroupBy('w.name')
             .addGroupBy('c.id')

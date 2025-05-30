@@ -5,7 +5,7 @@ import { Product } from './entities/product.entity';
 import { CreateProductDTO, UpdateProductDTO } from './dtos';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Auth } from '../../decorators/permission.decorator';
-
+import { CurrentTenant } from 'src/decorators/current-tenant.decorator';
 @Controller('products')
 export class ProductController {
     constructor(
@@ -18,6 +18,7 @@ export class ProductController {
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10,
+        @CurrentTenant() tenantId: string
     ): Promise<Pagination<Product>>{
         limit = limit > 10 ? 10 : limit;
         const options: IPaginationOptions = {
@@ -26,13 +27,13 @@ export class ProductController {
             route: '/products', 
         };
 
-        return this.productService.getAllProducts(options, query);
+        return this.productService.getAllProducts(options, tenantId, query);
     }
 
-    @Get('list')
+    @Get('list/:tenantId')
     @Auth("get_all_products")
-    getAllProductList(){
-        return this.productService.getAllProductList();
+    getAllProductList(@Param('tenantId') tenantId: string){
+        return this.productService.getAllProductList(tenantId);
     }
 
     @Get(':id')
@@ -48,16 +49,17 @@ export class ProductController {
     async createProduct(
         @Body() createProductDto: CreateProductDTO,
         @UploadedFile() file: Express.Multer.File,
+        @CurrentTenant() tenantId: string
     ) {
-        return await this.productService.createProduct(createProductDto, file);
+        return await this.productService.createProduct(createProductDto, tenantId, file);
     }
 
     @Put(':id')
     @Auth("update_product")
     @UseInterceptors(FileInterceptor('image'))
     @UsePipes(new ValidationPipe({ transform: true }))
-    updateProduct(@Param('id') id: string, @Body() updateData: UpdateProductDTO, @UploadedFile() file: Express.Multer.File,) {
-        return this.productService.updateProduct(id, updateData, file);
+    updateProduct(@Param('id') id: string, @Body() updateData: UpdateProductDTO, @UploadedFile() file: Express.Multer.File, @CurrentTenant() tenantId: string) {
+        return this.productService.updateProduct(id, updateData, tenantId, file);
     }
 
     @Delete(':id')

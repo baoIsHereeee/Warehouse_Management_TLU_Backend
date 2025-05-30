@@ -18,17 +18,18 @@ export class ProductService {
         private cloudinaryService: CloudinaryService,
     ){}
 
-    async getAllProducts(options: IPaginationOptions, query?: string): Promise<Pagination<Product>> {
+    async getAllProducts(options: IPaginationOptions, tenantId: string, query?: string): Promise<Pagination<Product>> {
         const queryBuilder = this.productRepository.createQueryBuilder('product').leftJoinAndSelect('product.category', 'category'); 
 
+        queryBuilder.where('product.tenant.id = :tenantId', { tenantId });
 
-        if (query) queryBuilder.where('LOWER(product.name) LIKE :query', { query: `%${query.toLowerCase()}%` });
+        if (query) queryBuilder.andWhere('LOWER(product.name) LIKE :query', { query: `%${query.toLowerCase()}%` });
 
         return paginate<Product>(queryBuilder, options);
     }
 
-    async getAllProductList(){
-        return await this.productRepository.find();
+    async getAllProductList(tenantId: string){
+        return await this.productRepository.find({ where: { tenant: { id: tenantId } } });
     }
 
     async getProductById(id: string) {
@@ -39,8 +40,8 @@ export class ProductService {
         return product;
     }
 
-    async createProduct(createData: CreateProductDTO, file?: Express.Multer.File) {
-        const currentUser = await this.userRepository.findOne({ where: { id: createData.userId } });
+    async createProduct(createData: CreateProductDTO, tenantId: string, file?: Express.Multer.File) {
+        const currentUser = await this.userRepository.findOne({ where: { id: createData.userId, tenant: { id: tenantId } } });
         if (!currentUser) throw new NotFoundException('User not found! Please try again!');
 
         let imageUrl: string | undefined;
@@ -58,7 +59,8 @@ export class ProductService {
             ...createData,
             image: imageUrl,
             user: currentUser,
-            category: createData.categoryId ? await this.categoryRepository.findOne({ where: { id: createData.categoryId } }) : null,
+            category: createData.categoryId ? await this.categoryRepository.findOne({ where: { id: createData.categoryId, tenant: { id: tenantId } } }) : null,
+            tenant: { id: tenantId }
         });
         
         const savedProduct = await this.productRepository.save(product);
@@ -68,8 +70,8 @@ export class ProductService {
         return await this.productRepository.findOne({ where: { id: savedProduct.id }, relations: ['user', 'category'] });
     }
 
-    async updateProduct(id: string, updateData: UpdateProductDTO, file?: Express.Multer.File) {
-        const product = await this.productRepository.findOne({ where: { id }, relations: ['exportDetails'] });
+    async updateProduct(id: string, updateData: UpdateProductDTO, tenantId: string, file?: Express.Multer.File) {
+        const product = await this.productRepository.findOne({ where: { id, tenant: { id: tenantId } }, relations: ['exportDetails'] });
         if (!product) throw new NotFoundException('Product not found! Please try again!');
 
         if (updateData.name) if (product.exportDetails.length > 0) throw new BadRequestException('This Product has already been exported! Cannot update information!');
@@ -104,7 +106,7 @@ export class ProductService {
             if (updateData.categoryId === null) {
                 product.category = null;
             } else {
-                const category = await this.categoryRepository.findOne({ where: { id: updateData.categoryId } });
+                const category = await this.categoryRepository.findOne({ where: { id: updateData.categoryId, tenant: { id: tenantId } } });
                 if (!category) throw new NotFoundException('Category not found! Please try again!');
                 product.category = category;
             }

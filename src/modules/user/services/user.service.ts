@@ -116,7 +116,7 @@ export class UserService {
         const role = await this.roleRepository.findOne({ where: { id: roleId, tenant: { id: tenantId } } });
         const user = await this.userRepository.findOne({ where: { id: userId, tenant: { id: tenantId } } });
 
-        if (!role || !user) throw new NotFoundException("Role or Usser not found!");
+        if (!role || !user) throw new NotFoundException("Role or User not found!");
 
         return await this.userRoleRepository.delete({ roleId: role.id, userId: user.id, tenant: { id: tenantId } });
     }

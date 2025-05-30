@@ -207,6 +207,7 @@ export class ExportService {
                     sellingPrice: newExportDetail.sellingPrice,
                     product: productWarehouse.product,
                     warehouse: productWarehouse.warehouse,
+                    tenant: { id: tenantId }
                 });
     
                 await exportDetailRepository.save(newExportDetailEntity);

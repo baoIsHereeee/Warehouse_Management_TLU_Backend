@@ -147,7 +147,7 @@ export class UserService {
             this.configService.getOrThrow("ACCESS_SECRET_TOKEN"),
 
             {
-                expiresIn: "1h"
+                expiresIn: "2h"
             }
         )
 
@@ -162,7 +162,7 @@ export class UserService {
             this.configService.getOrThrow("REFRESH_SECRET_TOKEN"),
 
             {
-                expiresIn: "5h"
+                expiresIn: "10h"
             }
         )
         

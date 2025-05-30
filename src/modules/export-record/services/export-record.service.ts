@@ -26,10 +26,12 @@ export class ExportService {
         private utilService: UtilService
     ) {}
 
-    async getAllExportRecords(options: IPaginationOptions, query?: string): Promise<Pagination<ExportRecord>> {
+    async getAllExportRecords(options: IPaginationOptions, tenantId: string, query?: string): Promise<Pagination<ExportRecord>> {
         const queryBuilder = this.exportRepository.createQueryBuilder('export');
 
-        if (query) queryBuilder.where('LOWER(export.description) LIKE :query', { query: `%${query.toLowerCase()}%` });
+        queryBuilder.where('export.tenant.id = :tenantId', { tenantId });
+
+        if (query) queryBuilder.andWhere('LOWER(export.description) LIKE :query', { query: `%${query.toLowerCase()}%` });
 
         queryBuilder.orderBy('export.updatedAt', 'DESC');
 
@@ -40,8 +42,8 @@ export class ExportService {
         return await this.exportRepository.findOne({ where: { id }, relations: ['exportDetails', 'exportDetails.product', 'customer', 'exportDetails.warehouse', 'user'] });
     }
 
-    async createExportRecord(createData: CreateExportDTO) {
-        const currentUser = await this.userRepository.findOne({ where: { id: createData.userId } });
+    async createExportRecord(createData: CreateExportDTO, tenantId: string) {
+        const currentUser = await this.userRepository.findOne({ where: { id: createData.userId, tenant: { id: tenantId } } });
         if (!currentUser) throw new NotFoundException('User not found! Cannot create export record! Please try again!');
 
         const queryRunner = this.dataSource.createQueryRunner();
@@ -61,8 +63,9 @@ export class ExportService {
     
             const newExportRecord = exportRepository.create({
                 user: currentUser,
-                customer: createData.customerId ? await customerRepository.findOne({ where: { id: createData.customerId } }) : null,
+                customer: createData.customerId ? await customerRepository.findOne({ where: { id: createData.customerId, tenant: { id: tenantId } } }) : null,
                 description: createData.description,
+                tenant: { id: tenantId }
             });
     
             savedExportRecord = await exportRepository.save(newExportRecord);
@@ -100,6 +103,7 @@ export class ExportService {
                     sellingPrice: exportDetail.sellingPrice,
                     product: productWarehouse.product,
                     warehouse: productWarehouse.warehouse,
+                    tenant: { id: tenantId }
                 });
                 
                 await exportDetailRepository.save(newExportDetail);
@@ -118,7 +122,7 @@ export class ExportService {
         this.utilService.alertMinimumStock(warehouseDetails);
     }
 
-    async updateExportRecord(id: string, updateData: UpdateExportDTO) {
+    async updateExportRecord(id: string, updateData: UpdateExportDTO, tenantId: string) {
         let oldExportRecord: ExportRecord;
 
         let warehouseDetails: WarehouseDetail[] = [];
@@ -153,7 +157,7 @@ export class ExportService {
 
             exportRecord.exportDetails = oldExportDetails;
 
-            const exportCustomer = await exportRepository.findOne({ where: { id }, relations: ['customer'] });
+            const exportCustomer = await exportRepository.findOne({ where: { id, tenant: { id: tenantId } }, relations: ['customer'] });
             exportRecord.customer = exportCustomer!.customer;
 
             oldExportRecord = exportRecord;
@@ -210,14 +214,14 @@ export class ExportService {
 
             const { exportDetails, customerId, userId, ...rest } = updateData;
             if (customerId) {
-                const customer = await this.customerRepository.findOne({ where: { id: customerId } });
+                const customer = await this.customerRepository.findOne({ where: { id: customerId, tenant: { id: tenantId } } });
                 if (!customer) throw new NotFoundException('Customer not found! Cannot update export record! Please try again!');
 
                 await exportRepository.update(id, { customer });
             }
 
             if (userId) {
-                const user = await this.userRepository.findOne({ where: { id: userId } });
+                const user = await this.userRepository.findOne({ where: { id: userId, tenant: { id: tenantId } } });
                 if (!user) throw new NotFoundException('User not found! Cannot update export record! Please try again!');
 
                 await exportRepository.update(id, { user });
@@ -233,7 +237,7 @@ export class ExportService {
             await queryRunner.release();
         }
 
-        const updatedExportRecord = await this.exportRepository.findOne({ where: { id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
+        const updatedExportRecord = await this.exportRepository.findOne({ where: { id, tenant: { id: tenantId } }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
         this.mailService.sendUpdateExportEmail(oldExportRecord, updatedExportRecord!);
         this.utilService.alertMinimumStock(warehouseDetails);
     }

@@ -4,7 +4,7 @@ import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { ExportRecord } from './entities/export.entity';
 import { CreateExportDTO, UpdateExportDTO } from './dtos';
 import { Auth } from '../../decorators/permission.decorator';
-
+import { CurrentTenant } from 'src/decorators/current-tenant.decorator';
 @Controller('exports')
 export class ExportRecordController {
     constructor(
@@ -17,6 +17,7 @@ export class ExportRecordController {
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 5,
+        @CurrentTenant() tenantId: string
     ): Promise<Pagination<ExportRecord>>{
         limit = limit > 5 ? 5 : limit;
         const options: IPaginationOptions = {
@@ -25,7 +26,7 @@ export class ExportRecordController {
             route: '/exports', 
         };
 
-        return this.exportService.getAllExportRecords(options, query);
+        return this.exportService.getAllExportRecords(options, tenantId, query);
     }
 
     @Get(':id')
@@ -37,15 +38,15 @@ export class ExportRecordController {
     @Post()
     @Auth("create_export")
     @UsePipes(new ValidationPipe())
-    createExportRecord(@Body() createData: CreateExportDTO) {
-        return this.exportService.createExportRecord(createData);
+    createExportRecord(@Body() createData: CreateExportDTO, @CurrentTenant() tenantId: string) {
+        return this.exportService.createExportRecord(createData, tenantId);
     }
 
     @Put(':id')
     @Auth("update_export")
     @UsePipes(new ValidationPipe())
-    updateExportRecord(@Param('id') id: string, @Body() updateData: UpdateExportDTO) {
-        return this.exportService.updateExportRecord(id, updateData);
+    updateExportRecord(@Param('id') id: string, @Body() updateData: UpdateExportDTO, @CurrentTenant() tenantId: string) {
+        return this.exportService.updateExportRecord(id, updateData, tenantId);
     }
 
     @Delete(':id')

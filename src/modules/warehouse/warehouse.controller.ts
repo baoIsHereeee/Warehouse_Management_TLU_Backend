@@ -4,7 +4,7 @@ import { CreateWarehouseDTO, UpdateWarehouseDTO } from './dtos';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { Warehouse } from './entities/warehouse.entity';
 import { Auth } from '../../decorators/permission.decorator';
-
+import { CurrentTenant } from 'src/decorators/current-tenant.decorator';
 @Controller('warehouses')
 export class WarehouseController {
     constructor(
@@ -17,6 +17,7 @@ export class WarehouseController {
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 5,
+        @CurrentTenant() tenantId: string
     ): Promise<Pagination<Warehouse>>{
         limit = limit > 5 ? 5 : limit;
         const options: IPaginationOptions = {
@@ -25,13 +26,13 @@ export class WarehouseController {
             route: '/warehouses', 
         };
 
-        return this.warehouseService.getAllWarehouses(options, query);
+        return this.warehouseService.getAllWarehouses(options, tenantId, query);
     }
 
-    @Get('list')
+    @Get('list/:tenantId')
     @Auth("get_all_warehouses")
-    getAllWarehouseList(){
-        return this.warehouseService.getAllWarehouseList();
+    getAllWarehouseList(@Param('tenantId') tenantId: string){
+        return this.warehouseService.getAllWarehouseList(tenantId);
     }
 
     @Get(':id')
@@ -43,15 +44,15 @@ export class WarehouseController {
     @Post()
     @Auth("create_warehouse")
     @UsePipes(new ValidationPipe())
-    async createWarehouse(@Body() createData: CreateWarehouseDTO) {
-        return this.warehouseService.createWarehouse(createData);
+    async createWarehouse(@Body() createData: CreateWarehouseDTO, @CurrentTenant() tenantId: string) {
+        return this.warehouseService.createWarehouse(createData, tenantId);
     }
 
     @Put(':id')
     @Auth("update_warehouse")
     @UsePipes(new ValidationPipe())
-    async updateWarehouse(@Param('id') id: string, @Body() updateData: UpdateWarehouseDTO) {
-        return this.warehouseService.updateWarehouse(id, updateData);
+    async updateWarehouse(@Param('id') id: string, @Body() updateData: UpdateWarehouseDTO, @CurrentTenant() tenantId: string) {
+        return this.warehouseService.updateWarehouse(id, updateData, tenantId);
     }
 
     @Delete(':id')

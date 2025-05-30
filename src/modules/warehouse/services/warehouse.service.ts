@@ -16,28 +16,33 @@ export class WarehouseService {
     ) {}
 
 
-    async getAllWarehouses(options: IPaginationOptions, query?: string): Promise<Pagination<Warehouse>> {
+    async getAllWarehouses(options: IPaginationOptions, tenantId: string, query?: string): Promise<Pagination<Warehouse>> {
         const queryBuilder = this.warehouseRepository.createQueryBuilder('warehouse');
 
-        if (query) queryBuilder.where('LOWER(warehouse.name) LIKE :query', { query: `%${query.toLowerCase()}%` });
+        queryBuilder.where('warehouse.tenant.id = :tenantId', { tenantId });
+
+        if (query) queryBuilder.andWhere('LOWER(warehouse.name) LIKE :query', { query: `%${query.toLowerCase()}%` });
 
         return paginate<Warehouse>(queryBuilder, options);
     }
 
-    async getAllWarehouseList(){
-        return await this.warehouseRepository.find();
+    async getAllWarehouseList(tenantId: string){
+        return await this.warehouseRepository.find({ where: { tenant: { id: tenantId } } });
     }
 
     async getWarehouseById(id: string) {
         return this.warehouseRepository.findOne({ where: { id }, relations: ['warehouseDetails', 'warehouseDetails.product'] });
     }
 
-    async createWarehouse(createData: CreateWarehouseDTO) {
-        const newWarehouse = this.warehouseRepository.create(createData);
+    async createWarehouse(createData: CreateWarehouseDTO, tenantId: string) {
+        const newWarehouse = this.warehouseRepository.create({ ...createData, tenant: { id: tenantId } });
         return this.warehouseRepository.save(newWarehouse);
     }
 
-    async updateWarehouse(id: string, updateData: UpdateWarehouseDTO) {
+    async updateWarehouse(id: string, updateData: UpdateWarehouseDTO, tenantId: string) {
+        const warehouse = await this.warehouseRepository.findOne({ where: { id, tenant: { id: tenantId } } });
+        if (!warehouse) throw new NotFoundException('Warehouse not found! Please try again!');
+
         return await this.warehouseRepository.update(id, updateData);
     }
 

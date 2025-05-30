@@ -3,6 +3,7 @@ import SupplierRepository from '../repositories/customer.repository';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { Supplier } from '../entities/supplier.entity';
 import { CreateSupplierDTO, UpdateSupplierDTO } from '../dtos';
+import { Not } from 'typeorm';
 
 @Injectable()
 export class SupplierService {
@@ -11,8 +12,10 @@ export class SupplierService {
     ){}
 
    
-    async getAllSuppliers(options: IPaginationOptions, query?: string): Promise<Pagination<Supplier>> {
+    async getAllSuppliers(options: IPaginationOptions, tenantId: string, query?: string): Promise<Pagination<Supplier>> {
         const queryBuilder = this.supplierRepository.createQueryBuilder('supplier');
+
+        queryBuilder.where('supplier.tenant.id = :tenantId', { tenantId });
 
         if (query) queryBuilder.where('LOWER(supplier.fullname) LIKE :query', { query: `%${query.toLowerCase()}%` });
 
@@ -23,24 +26,24 @@ export class SupplierService {
         return this.supplierRepository.findOne({ where: { id }, relations: ['importRecords'] });
     }
 
-    async getSupplierList() {
-        return this.supplierRepository.find();
+    async getSupplierList(tenantId: string) {
+        return this.supplierRepository.find({ where: { tenant: { id: tenantId } } });
     }
 
-    async createSupplier(createData: CreateSupplierDTO) {
-        const existingEmail = await this.supplierRepository.findOne({ where: { email: createData.email } });
+    async createSupplier(createData: CreateSupplierDTO, tenantId: string) {
+        const existingEmail = await this.supplierRepository.findOne({ where: { email: createData.email, tenant: { id: tenantId } } });
         if (existingEmail) throw new BadRequestException('Supplier with this email already exists');
 
-        const newSupplier = this.supplierRepository.create(createData);
+        const newSupplier = this.supplierRepository.create({ ...createData, tenant: { id: tenantId } });
         return await this.supplierRepository.save(newSupplier);
     }
 
-    async updateSupplier(id: string, updateData: UpdateSupplierDTO) {
-        const existingSupplier = await this.supplierRepository.findOne({ where: { id } });
+    async updateSupplier(id: string, updateData: UpdateSupplierDTO, tenantId: string) {
+        const existingSupplier = await this.supplierRepository.findOne({ where: { id, tenant: { id: tenantId } } });
         if (!existingSupplier) throw new BadRequestException('Supplier not found! Please try again!');
 
-        const existingEmail = await this.supplierRepository.findOne({ where: { email: updateData.email } });
-        if (existingEmail && existingEmail.id !== id) throw new BadRequestException('Supplier with this email already exists');
+        const existingEmail = await this.supplierRepository.findOne({ where: { email: updateData.email, id: Not(id), tenant: { id: tenantId } } });
+        if (existingEmail) throw new BadRequestException('Supplier with this email already exists');
     
         return await this.supplierRepository.update(id, updateData);
     }

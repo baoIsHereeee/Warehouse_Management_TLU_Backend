@@ -4,6 +4,7 @@ import { CreateCustomerDTO, UpdateCustomerDTO } from './dtos';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { Customer } from './entities/customer.entity';
 import { Auth } from '../../decorators/permission.decorator';
+import { CurrentTenant } from 'src/decorators/current-tenant.decorator';
 
 @Controller('customers')
 export class CustomerController {
@@ -17,6 +18,7 @@ export class CustomerController {
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 5,
+        @CurrentTenant() tenantId: string
     ): Promise<Pagination<Customer>>{
         limit = limit > 5 ? 5 : limit;
         const options: IPaginationOptions = {
@@ -25,13 +27,13 @@ export class CustomerController {
             route: '/customers', 
         };
 
-        return this.customerService.getAllCustomers(options, query);
+        return this.customerService.getAllCustomers(options, tenantId, query);
     }
 
-    @Get('list')
+    @Get('list/:tenantId')
     @Auth("get_all_customers")
-    getAllCustomerList(){
-        return this.customerService.getAllCustomerList();
+    getAllCustomerList(@Param('tenantId') tenantId: string){
+        return this.customerService.getAllCustomerList(tenantId);
     }
 
     @Get(':id')
@@ -43,15 +45,15 @@ export class CustomerController {
     @Post()
     @Auth("create_customer")
     @UsePipes(new ValidationPipe())
-    async createCustomer(@Body() createData: CreateCustomerDTO) {
-        return this.customerService.createCustomer(createData);
+    async createCustomer(@Body() createData: CreateCustomerDTO, @CurrentTenant() tenantId: string) {
+        return this.customerService.createCustomer(createData, tenantId);
     }
 
     @Put(':id')
     @Auth("update_customer")
     @UsePipes(new ValidationPipe())
-    async updateCustomer(@Param('id') id: string, @Body() updateData: UpdateCustomerDTO) {
-        return this.customerService.updateCustomer(id, updateData);
+    async updateCustomer(@Param('id') id: string, @Body() updateData: UpdateCustomerDTO, @CurrentTenant() tenantId: string) {
+        return this.customerService.updateCustomer(id, updateData, tenantId);
     }
 
     @Delete(':id')

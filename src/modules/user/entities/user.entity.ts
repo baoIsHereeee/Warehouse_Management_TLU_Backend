@@ -15,7 +15,7 @@ export class User extends BaseEntity {
     @Column({ type: 'text'})
     fullname: string;
 
-    @Column({ type: 'text', unique: true, nullable: true })
+    @Column({ type: 'text', nullable: true })
     email: string | null;
     
     @Column({ type: 'text'})
@@ -24,14 +24,6 @@ export class User extends BaseEntity {
 
     @Column({ type: 'int', nullable: true })
     age: number | null;
-
-    // @ManyToMany(() => Role, (role) => role.users)
-    // @JoinTable({
-    //     name: "users_roles",
-    //     joinColumn: { name: "user_id", referencedColumnName: "id" },
-    //     inverseJoinColumn: { name: "role_id", referencedColumnName: "id" }
-    // })
-    // roles: Role[];
 
     @OneToMany(() => UserRole, (userRole) => userRole.user)
     userRoles: UserRole[];

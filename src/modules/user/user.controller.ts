@@ -45,15 +45,15 @@ export class UserController {
     @Post("users")
     @Auth("create_user")
     @UsePipes(new ValidationPipe())
-    createUser(@Body() createData: CreateUserDTO) {
-        return this.userService.createUser(createData);
+    createUser(@Body() createData: CreateUserDTO, @CurrentTenant() tenantId: string) {
+        return this.userService.createUser(createData, tenantId);
     }
 
     @Put("users/:id")
     @Auth("update_user")
     @UsePipes(new ValidationPipe())
-    updateUser(@Param('id') id: string, @Body() updateData: UpdateUserDTO) {
-        return this.userService.updateUser(id, updateData);
+    updateUser(@Param('id') id: string, @Body() updateData: UpdateUserDTO, @CurrentTenant() tenantId: string) {
+        return this.userService.updateUser(id, updateData, tenantId);
     }
 
     @Delete("users/:id")
@@ -64,13 +64,13 @@ export class UserController {
 
     @Post("users-roles/:roleId/:userId")
     @Auth("add_user_role")
-    addUserRole(@Param('roleId') roleId: string, @Param('userId') userId: string) {
-        return this.userService.addUserRole(roleId, userId);
+    addUserRole(@Param('roleId') roleId: string, @Param('userId') userId: string, @CurrentTenant() tenantId: string) {
+        return this.userService.addUserRole(roleId, userId, tenantId);
     }
 
     @Delete("users-roles/:roleId/:userId")
     @Auth("delete_user_role")
-    removeUserRole(@Param('roleId') roleId: string, @Param('userId') userId: string) {
-        return this.userService.removeUserRole(roleId, userId);
+    removeUserRole(@Param('roleId') roleId: string, @Param('userId') userId: string, @CurrentTenant() tenantId: string) {
+        return this.userService.removeUserRole(roleId, userId, tenantId);
     }
 }

@@ -47,28 +47,40 @@ export class UserService {
         return user;
     }
 
-    async createUser(createData: CreateUserDTO) {
-        const user = await this.userRepository.findOne({ where: { email: createData.email } });
+    async createUser(createData: CreateUserDTO, tenantId: string) {
+        const user = await this.userRepository.findOne({ where: { email: createData.email, tenant: { id: tenantId } } });
         if (user) throw new BadRequestException('Email already exists! Please try again!');
 
-        const newUser = this.userRepository.create(createData);
+        const newUser = this.userRepository.create({
+            ...createData,
+            tenant: { id: tenantId }
+        });
 
         const hashedPassword = this.authService.hashPassword(createData.password);  
         newUser.password = hashedPassword;
 
-        // ... Fix this after have tenant ...
-        // const staffRole = await this.roleRepository.findOne({ where: { name: 'Staff' } }) as Role;
-        // newUser.roles = [staffRole];
+        const savedUser = await this.userRepository.save(newUser);
 
-        return await this.userRepository.save(newUser);
+        const staffRole = await this.roleRepository.findOne({ where: { name: 'Staff', tenant: { id: tenantId } } }) as Role;
+        const newUserRole = this.userRoleRepository.create({
+            roleId: staffRole.id,
+            userId: savedUser.id,
+            tenant: { id: tenantId }
+        });
+
+        const savedUserRole = await this.userRoleRepository.save(newUserRole);
+
+        savedUser.userRoles = [savedUserRole];
+
+        return savedUser;
     }
 
-    async updateUser(id: string, updateData: UpdateUserDTO) {
-        const user = await this.userRepository.findOne({ where: { id } });
+    async updateUser(id: string, updateData: UpdateUserDTO, tenantId: string) {
+        const user = await this.userRepository.findOne({ where: { id, tenant: { id: tenantId } } });
         if (!user) throw new NotFoundException('User not found! Please try again!');
 
         if (updateData.email) {
-            const existedEmail = await this.userRepository.findOne({ where: { email: updateData.email } });
+            const existedEmail = await this.userRepository.findOne({ where: { email: updateData.email, tenant: { id: tenantId } } });
             if (existedEmail && existedEmail.id !== id) throw new BadRequestException('Email already exists! Please try again!');
         }
 
@@ -85,9 +97,9 @@ export class UserService {
         return this.userRepository.softDelete(id);
     }
 
-    async addUserRole(roleId: string, userId: string) {
-        const role = await this.roleRepository.findOne({ where: { id: roleId } });
-        const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['tenant'] });
+    async addUserRole(roleId: string, userId: string, tenantId: string) {
+        const role = await this.roleRepository.findOne({ where: { id: roleId, tenant: { id: tenantId } } });
+        const user = await this.userRepository.findOne({ where: { id: userId, tenant: { id: tenantId } }, relations: ['tenant'] });
 
         if (!role || !user) throw new NotFoundException("Role or User not found!");
 
@@ -100,13 +112,13 @@ export class UserService {
         return await this.userRoleRepository.save(newUserRole);
     }
 
-    async removeUserRole(roleId: string, userId: string) {
-        const role = await this.roleRepository.findOne({ where: { id: roleId } });
-        const user = await this.userRepository.findOne({ where: { id: userId } });
+    async removeUserRole(roleId: string, userId: string, tenantId: string) {
+        const role = await this.roleRepository.findOne({ where: { id: roleId, tenant: { id: tenantId } } });
+        const user = await this.userRepository.findOne({ where: { id: userId, tenant: { id: tenantId } } });
 
         if (!role || !user) throw new NotFoundException("Role or Usser not found!");
 
-        return await this.userRoleRepository.delete({ roleId: role.id, userId: user.id });
+        return await this.userRoleRepository.delete({ roleId: role.id, userId: user.id, tenant: { id: tenantId } });
     }
 
     async signIn(payload: SignInPayload, tenantName: string) {

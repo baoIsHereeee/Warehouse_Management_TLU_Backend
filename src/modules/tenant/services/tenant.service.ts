@@ -9,6 +9,7 @@ import { Role } from '../../role/entities/role.entity';
 import { Permission } from '../../permission/entities/permission.entity';
 import { rolesPermissions } from '../../../databases/seeds/seed.data';
 import { RolePermission } from '../../role/entities/role-permission.entity';
+import { UserRole } from 'src/modules/user/entities/user-role.entity';
 @Injectable()
 export class TenantService {
     constructor(
@@ -71,6 +72,8 @@ export class TenantService {
                 }
             }
 
+            const adminRole = await queryRunner.manager.findOne(Role, { where: { name: 'Admin', tenant: { id: savedTenant.id } } });
+
             const newDefaultAdminUser = queryRunner.manager.create(User, {
                 fullname: `${createData.name} - Default Admin`,
                 email: `${createData.name}@example.com`,
@@ -79,6 +82,14 @@ export class TenantService {
             });
 
             const savedUser = await queryRunner.manager.save(newDefaultAdminUser);
+
+            const newUserRole = queryRunner.manager.create(UserRole, {
+                roleId: adminRole!.id,
+                userId: savedUser.id,
+                tenant: savedTenant
+            });
+
+            await queryRunner.manager.save(newUserRole);
 
             await queryRunner.commitTransaction();
 

@@ -13,8 +13,9 @@ export class RoleService {
         private rolePermissionRepository: RolePermissionRepository
     ){}
 
-    async getAllRoles() {
+    async getAllRoles(tenantId: string) {
         return await this.roleRepository.find({
+            where: { tenant: { id: tenantId } },
             relations: ['rolePermissions.permission'],
         });
     }

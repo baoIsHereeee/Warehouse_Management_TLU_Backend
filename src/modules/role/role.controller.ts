@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, UsePipes, ValidationPi
 import { BaseRoleDTO } from './dtos/base-role.dto';
 import { RoleService } from './services/role.service';
 import { Auth } from '../../decorators/permission.decorator';
+import { CurrentTenant } from 'src/decorators/current-tenant.decorator';
 
 @Controller('roles')
 export class RoleController {
@@ -11,8 +12,8 @@ export class RoleController {
 
     @Get()
     @Auth("get_all_roles")
-    getAllRoles() {
-        return this.roleService.getAllRoles();
+    getAllRoles(@CurrentTenant() tenantId: string) {
+        return this.roleService.getAllRoles(tenantId);
     }
 
     @Get(":id")

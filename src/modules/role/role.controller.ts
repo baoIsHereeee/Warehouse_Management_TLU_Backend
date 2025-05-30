@@ -25,15 +25,15 @@ export class RoleController {
     @Post()
     @Auth("create_role")
     @UsePipes(new ValidationPipe())
-    createRole(@Body() createData: BaseRoleDTO) {
-        return this.roleService.createRole(createData);
+    createRole(@Body() createData: BaseRoleDTO, @CurrentTenant() tenantId: string) {
+        return this.roleService.createRole(createData, tenantId);
     }
 
     @Put(":id") 
     @Auth("update_role")
     @UsePipes(new ValidationPipe())
-    updateRole(@Param('id') id: string, @Body() updateData: BaseRoleDTO) {
-        return this.roleService.updateRole(id, updateData);
+    updateRole(@Param('id') id: string, @Body() updateData: BaseRoleDTO, @CurrentTenant() tenantId: string) {
+        return this.roleService.updateRole(id, updateData, tenantId);
     }
 
     @Delete(":id")
@@ -44,13 +44,13 @@ export class RoleController {
 
     @Post("/:roleId/permissions/:permissionId")
     @Auth("create_role_permission")
-    addRolePermission(@Param('roleId') roleId: string, @Param('permissionId') permissionId: number) {
-        return this.roleService.addRolePermission(roleId, permissionId);
+    addRolePermission(@Param('roleId') roleId: string, @Param('permissionId') permissionId: number, @CurrentTenant() tenantId: string) {
+        return this.roleService.addRolePermission(roleId, permissionId, tenantId);
     }
 
     @Delete("/:roleId/permissions/:permissionId")
     @Auth("delete_role_permission")
-    removeRolePermission(@Param('roleId') roleId: string, @Param('permissionId') permissionId: number) {
-        return this.roleService.removeRolePermission(roleId, permissionId);
+    removeRolePermission(@Param('roleId') roleId: string, @Param('permissionId') permissionId: number, @CurrentTenant() tenantId: string) {
+        return this.roleService.removeRolePermission(roleId, permissionId, tenantId);
     }
 }

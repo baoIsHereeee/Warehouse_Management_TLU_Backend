@@ -40,6 +40,12 @@ export class TenantService {
             });
 
             if (existingTenant) throw new BadRequestException('Tenant already exists! Please try again!');
+
+            const existingEmail = await queryRunner.manager.findOne(User, { 
+                where: { email: createData.email }
+            });
+
+            if (existingEmail) throw new BadRequestException('Email already exists! Please try again!');
             
             const newTenant = queryRunner.manager.create(Tenant, createData);
             const savedTenant = await queryRunner.manager.save(newTenant);
@@ -76,7 +82,7 @@ export class TenantService {
 
             const newDefaultAdminUser = queryRunner.manager.create(User, {
                 fullname: `${createData.name} - Default Admin`,
-                email: `${createData.name}@example.com`,
+                email: createData.email,
                 password: this.authService.hashPassword(this.configService.get('DEFAULT_ADMIN_PASSWORD')!),
                 tenant: savedTenant,
             });

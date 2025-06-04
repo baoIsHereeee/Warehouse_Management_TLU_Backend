@@ -5,4 +5,8 @@ export class CreateTenantDTO {
     @IsString()
     @IsNotEmpty()
     name: string;
+
+    @IsString()
+    @IsNotEmpty()
+    email: string;
 }

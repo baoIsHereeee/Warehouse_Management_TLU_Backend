@@ -128,7 +128,7 @@ export class ImportRecordService {
 
         const importRecord = await this.importRepository.findOne({
             where: { id: savedImportRecord.id},
-            relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'supplier', 'user'],
+            relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'supplier', 'user', 'tenant'],
         });
         this.mailService.sendCreateImportEmail(importRecord!);
     }
@@ -277,7 +277,7 @@ export class ImportRecordService {
 
         const updatedImportRecord = await this.importRepository.findOne({
             where: { id },
-            relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'supplier', 'user'],
+            relations: ['importDetails', 'importDetails.product', 'importDetails.warehouse', 'supplier', 'user', 'tenant'],
         });
 
         this.mailService.sendUpdateImportEmail(oldImportRecord, updatedImportRecord!);

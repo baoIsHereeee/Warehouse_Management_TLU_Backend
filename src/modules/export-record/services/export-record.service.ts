@@ -117,7 +117,7 @@ export class ExportService {
             await queryRunner.release();
         }
 
-        const fullExportRecord = await this.exportRepository.findOne({ where: { id: savedExportRecord.id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
+        const fullExportRecord = await this.exportRepository.findOne({ where: { id: savedExportRecord.id }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer', 'tenant'] });
         this.mailService.sendCreateExportEmail(fullExportRecord!);
         this.utilService.alertMinimumStock(warehouseDetails);
     }
@@ -238,7 +238,7 @@ export class ExportService {
             await queryRunner.release();
         }
 
-        const updatedExportRecord = await this.exportRepository.findOne({ where: { id, tenant: { id: tenantId } }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer'] });
+        const updatedExportRecord = await this.exportRepository.findOne({ where: { id, tenant: { id: tenantId } }, relations: ['exportDetails', 'exportDetails.product', 'exportDetails.warehouse', 'user', 'customer', 'tenant'] });
         this.mailService.sendUpdateExportEmail(oldExportRecord, updatedExportRecord!);
         this.utilService.alertMinimumStock(warehouseDetails);
     }

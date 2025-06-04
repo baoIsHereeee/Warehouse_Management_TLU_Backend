@@ -122,7 +122,7 @@ export class ProductService {
         const { categoryId, ...rest } = updateData;
         await this.productRepository.update(id, { ...rest, image: product.image }); 
 
-        const updatedProduct = await this.productRepository.findOne({ where: { id }, relations: ['user', 'category'] }) as Product;
+        const updatedProduct = await this.productRepository.findOne({ where: { id }, relations: ['user', 'category', 'tenant'] }) as Product;
 
         this.mailService.sendUpdateProductEmail(oldProduct, updatedProduct);
 

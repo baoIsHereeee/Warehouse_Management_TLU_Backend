@@ -8,32 +8,31 @@ import { WarehouseDetail } from '../../../modules/warehouse/entities/warehouse-d
 
 @Injectable()
 export class MailService {
-    private adminEmails : string[] = [];
-
     constructor(
         private mailerService: MailerService,
-
-        private userRepository: UserRepository,
+        private userRepository: UserRepository
     ) {}
 
-    async onModuleInit() {
+    private async getAdminEmailsByTenant(tenantId: string): Promise<string[]> {
         const admins = await this.userRepository
             .createQueryBuilder('user')
             .leftJoinAndSelect('user.userRoles', 'userRole')
             .leftJoinAndSelect('userRole.role', 'role')
             .where('role.name = :roleName', { roleName: 'Admin' })
+            .andWhere('user.tenant.id = :tenantId', { tenantId })
             .select(['user.email'])
             .getMany();
 
-        this.adminEmails = admins
+        return admins
             .map(admin => admin.email)
             .filter((email): email is string => email !== null && email !== undefined);
     }
 
     async sendCreateProductEmail(product: Product) {
         try {
+            const adminEmails = await this.getAdminEmailsByTenant(product.tenant.id);
             await this.mailerService.sendMail({
-                to: this.adminEmails,
+                to: adminEmails,
                 subject: 'Product Created',
                 template: 'product/create-product.template.hbs', 
                 context: {
@@ -47,8 +46,9 @@ export class MailService {
 
     async sendUpdateProductEmail(oldProduct: Product, newProduct: Product) {
         try {
+            const adminEmails = await this.getAdminEmailsByTenant(newProduct.tenant.id);
             await this.mailerService.sendMail({
-                to: this.adminEmails,
+                to: adminEmails,
                 subject: 'Product Updated',
                 template: 'product/update-product.template.hbs', 
                 context: {
@@ -63,8 +63,9 @@ export class MailService {
 
     async sendCreateExportEmail(exportRecord: ExportRecord) {
         try {
+            const adminEmails = await this.getAdminEmailsByTenant(exportRecord.tenant.id);
             await this.mailerService.sendMail({
-                to: this.adminEmails,
+                to: adminEmails,
                 subject: 'Export Created',
                 template: 'export-record/create-export.template.hbs', 
                 context: {
@@ -78,8 +79,9 @@ export class MailService {
 
     async sendUpdateExportEmail(oldExport: ExportRecord, newExport: ExportRecord) {
         try {
+            const adminEmails = await this.getAdminEmailsByTenant(newExport.tenant.id);
             await this.mailerService.sendMail({
-                to: this.adminEmails,
+                to: adminEmails,
                 subject: 'Export Updated',
                 template: 'export-record/update-export.template.hbs', 
                 context: {
@@ -94,8 +96,9 @@ export class MailService {
 
     async sendCreateImportEmail(importRecord: ImportRecord) {
         try {
+            const adminEmails = await this.getAdminEmailsByTenant(importRecord.tenant.id);
             await this.mailerService.sendMail({
-                to: this.adminEmails,
+                to: adminEmails,
                 subject: 'Import Created',
                 template: 'import-record/create-import.template.hbs', 
                 context: {
@@ -109,8 +112,9 @@ export class MailService {
 
     async sendUpdateImportEmail(oldImport: ImportRecord, newImport: ImportRecord) {
         try {
+            const adminEmails = await this.getAdminEmailsByTenant(newImport.tenant.id);
             await this.mailerService.sendMail({
-                to: this.adminEmails,
+                to: adminEmails,
                 subject: 'Import Updated',
                 template: 'import-record/update-import.template.hbs', 
                 context: {
@@ -125,8 +129,9 @@ export class MailService {
 
     async alertMinimumStockEmail(warehouseDetail: WarehouseDetail){
         try {
+            const adminEmails = await this.getAdminEmailsByTenant(warehouseDetail.tenant.id);
             await this.mailerService.sendMail({
-                to: this.adminEmails,
+                to: adminEmails,
                 subject: `Alert: Product ${warehouseDetail.product.name} in Warehouse ${warehouseDetail.warehouse.name} is below minimum stock level`,
                 template: 'product/minimum-stock.template.hbs', 
                 context: {
@@ -138,10 +143,11 @@ export class MailService {
         }
     }
 
-    async automationOrderEmail(supplierEmail: string, warehouseDetail: WarehouseDetail) {
+    async automationOrderEmail(supplierEmail: string[], warehouseDetail: WarehouseDetail) {
         try {
+            const adminEmails = await this.getAdminEmailsByTenant(warehouseDetail.tenant.id);
             await this.mailerService.sendMail({
-                to: supplierEmail,
+                to: [...supplierEmail, ...adminEmails], 
                 subject: `📤 Automation Order for Product ${warehouseDetail.product.name} 📤`,
                 template: 'product/automation-order.template.hbs', 
                 context: {

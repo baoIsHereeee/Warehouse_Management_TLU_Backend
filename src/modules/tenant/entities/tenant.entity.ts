@@ -14,6 +14,9 @@ import { ImportRecord } from "../../import-record/entities/import.entity";
 import { ImportDetail } from "../../import-record/entities/import-detail.entity";
 import { Warehouse } from "../../warehouse/entities/warehouse.entity";
 import { WarehouseDetail } from "../../warehouse/entities/warehouse-detail.entity";
+import { WarehouseTransfer } from "../../warehouse/entities/warehouse-transfer.entity";
+import { WarehouseTransferDetail } from "../../../modules/warehouse/entities/warehouse-transfer-detail.entity";
+
 @Entity('tenants')
 export class Tenant extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
@@ -63,4 +66,10 @@ export class Tenant extends BaseEntity {
 
     @OneToMany(() => WarehouseDetail, (warehouseDetail) => warehouseDetail.tenant)
     warehouseDetails: WarehouseDetail[];
+
+    @OneToMany(() => WarehouseTransfer, (warehouseTransfer) => warehouseTransfer.tenant)
+    warehouseTransfers: WarehouseTransfer[];
+
+    @OneToMany(() => WarehouseTransferDetail, (warehouseTransferDetail) => warehouseTransferDetail.tenant)
+    warehouseTransferDetails: WarehouseTransferDetail[];
 }

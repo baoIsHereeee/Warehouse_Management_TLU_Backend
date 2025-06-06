@@ -4,6 +4,7 @@ import { WarehouseDetail } from "./warehouse-detail.entity";
 import { ExportDetail } from "../../../modules/export-record/entities/export-detail.entity";
 import { ImportDetail } from "../../../modules/import-record/entities/import-detail.entity";
 import { Tenant } from "../../tenant/entities/tenant.entity";
+import { WarehouseTransfer } from "./warehouse-transfer.entity";
 
 @Entity({ name: "warehouses" })
 export class Warehouse extends BaseEntity {
@@ -27,6 +28,12 @@ export class Warehouse extends BaseEntity {
 
     @OneToMany(() => ImportDetail, (importDetail) => importDetail.warehouse)
     importDetails: ImportDetail[];
+
+    @OneToMany(() => WarehouseTransfer, (warehouseTransfer) => warehouseTransfer.fromWarehouse)
+    fromWarehouseTransfers: WarehouseTransfer[];
+
+    @OneToMany(() => WarehouseTransfer, (warehouseTransfer) => warehouseTransfer.toWarehouse)
+    toWarehouseTransfers: WarehouseTransfer[];
 
     @ManyToOne(() => Tenant, (tenant) => tenant.warehouses)
     @JoinColumn({ name: "tenant_id" })

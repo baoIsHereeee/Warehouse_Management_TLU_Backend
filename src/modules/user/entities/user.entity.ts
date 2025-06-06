@@ -7,6 +7,8 @@ import { ExportRecord } from "../../../modules/export-record/entities/export.ent
 import { ImportRecord } from "../../../modules/import-record/entities/import.entity";
 import { Tenant } from "../../../modules/tenant/entities/tenant.entity";
 import { UserRole } from "./user-role.entity";
+import { WarehouseTransfer } from "../../../modules/warehouse/entities/warehouse-transfer.entity";
+
 @Entity({ name: "users" })
 export class User extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
@@ -40,4 +42,7 @@ export class User extends BaseEntity {
     @ManyToOne(() => Tenant, (tenant) => tenant.users)
     @JoinColumn({ name: "tenant_id" })
     tenant: Tenant;
+
+    @OneToMany(() => WarehouseTransfer, (warehouseTransfer) => warehouseTransfer.user)
+    warehouseTransfers: WarehouseTransfer[];
 }

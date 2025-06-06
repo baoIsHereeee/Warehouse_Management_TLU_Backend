@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import WarehouseRepository from '../repositories/warehouse.repository';
-import WarehouseDetailRepository from '../repositories/warehouse-detail.repository';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { Warehouse } from '../entities/warehouse.entity';
 import { CreateWarehouseDTO, CreateWarehouseTransferDTO, UpdateWarehouseDTO, UpdateWarehouseTransferDTO } from '../dtos';
@@ -8,19 +7,14 @@ import { DataSource, Not } from 'typeorm';
 import { WarehouseDetail } from '../entities/warehouse-detail.entity';
 import { WarehouseTransfer } from '../entities/warehouse-transfer.entity';
 import WarehouseTransferRepository from '../repositories/warehouse-transfer.repository';
-import WarehouseTransferDetailRepository from '../repositories/warehouse-transfer-detail.repository';
 import { WarehouseTransferDetail } from '../entities/warehouse-transfer-detail.entity';
-import UserRepository from '../../user/repositories/user.repository';
 
 @Injectable()
 export class WarehouseService {
     constructor(
         private warehouseRepository: WarehouseRepository,
-        private warehouseDetailRepository: WarehouseDetailRepository,
         private dataSource: DataSource,
         private warehouseTransferRepository: WarehouseTransferRepository,
-        private warehouseTransferDetailRepository: WarehouseTransferDetailRepository,
-        private userRepository: UserRepository
     ) {}
 
 
@@ -116,7 +110,7 @@ export class WarehouseService {
 
             for (const warehouseTransferDetail of createData.warehouseTransferDetails){
                 const outgoingWarehouseDetail = await warehouseDetailRepository.findOne({ where: { warehouse: { id: createData.fromWarehouseId }, product: { id: warehouseTransferDetail.productId } }, relations: ['product'] });
-                if (!outgoingWarehouseDetail) throw new NotFoundException('Product not found in outgoing warehouse! Cannot create warehouse transfer!');
+                if (!outgoingWarehouseDetail) throw new NotFoundException(`Product not found in outgoing warehouse! Cannot create warehouse transfer!`);
                 
                 if (warehouseTransferDetail.quantity > outgoingWarehouseDetail.quantity) throw new BadRequestException(`Transfer quantity for product ${outgoingWarehouseDetail.product.name} (${warehouseTransferDetail.quantity}) exceeds current quantity in outgoing warehouse (${outgoingWarehouseDetail.quantity})`);
 

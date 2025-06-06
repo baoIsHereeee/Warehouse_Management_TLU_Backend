@@ -81,6 +81,8 @@ export class WarehouseService {
 
         if (query) queryBuilder.andWhere('LOWER(warehouseTransfer.description) LIKE :query', { query: `%${query.toLowerCase()}%` });
 
+        queryBuilder.orderBy('warehouseTransfer.updatedAt', 'DESC');
+
         return paginate<WarehouseTransfer>(queryBuilder, options);
     }
 

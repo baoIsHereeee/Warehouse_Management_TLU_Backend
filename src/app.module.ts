@@ -25,7 +25,7 @@ import { UtilModule } from './modules/util/util.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { ReportModule } from './modules/report/report.module';
 import { TenantModule } from './modules/tenant/tenant.module';
-import { RedisModule } from './modules/redis/redis.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [

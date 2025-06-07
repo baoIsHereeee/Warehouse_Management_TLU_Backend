@@ -11,7 +11,6 @@ export class RedisService {
     }
 
     async set(key: string, value: any, ttl?: number) {
-        console.log(key, value, ttl);
         await this.cacheManager.set(key, value, ttl);
     }
 
@@ -21,10 +20,5 @@ export class RedisService {
 
     async clear() {
         await this.cacheManager.clear();
-    }
-
-    async getKey() {
-        await this.cacheManager.set('test-key123', 'test-value123');
-        return await this.cacheManager.get('test-key');  
     }
 } 

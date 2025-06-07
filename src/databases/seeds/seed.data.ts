@@ -141,6 +141,18 @@ export const permissions: PermissionDefinition[] = [
     { name: "get_total_inventory_per_warehouse", description: "Allows retrieving total inventory per warehouse" },
 
     { name: "get_low_stock_products", description: "Allows retrieving low stock products" },
+
+    // Warehouse Transfer
+    { name: "get_all_warehouse_transfers", description: "Allows retrieving all warehouse transfers data" },
+
+    { name: "get_warehouse_transfer_by_id", description: "Allows retrieving a specific warehouse transfer by ID" },
+
+    { name: "create_warehouse_transfer", description: "Allows creating new warehouse transfer" },
+
+    { name: "update_warehouse_transfer", description: "Allows updating an exist warehouse transfer" },
+
+    { name: "delete_warehouse_transfer", description: "Allows deleting a warehouse transfer" },
+    
 ]
 
 export const roles: RoleDefinition[] = [
@@ -220,6 +232,11 @@ export const rolesPermissions = [
             "get_inventory_value_per_warehouse",
             "get_total_inventory_per_warehouse",
             "get_low_stock_products",
+            "get_all_warehouse_transfers",
+            "get_warehouse_transfer_by_id",
+            "create_warehouse_transfer",
+            "update_warehouse_transfer",
+            "delete_warehouse_transfer"
           ]
     }, 
 
@@ -252,6 +269,11 @@ export const rolesPermissions = [
             "create_supplier",
             "get_all_warehouses",
             "get_warehouse_by_id",
+            "get_all_warehouse_transfers",
+            "get_warehouse_transfer_by_id",
+            "create_warehouse_transfer",
+            "update_warehouse_transfer",
+            "delete_warehouse_transfer"
         ]
     },
 
@@ -278,6 +300,8 @@ export const rolesPermissions = [
             "create_supplier",
             "get_all_warehouses",
             "get_warehouse_by_id",
+            "get_all_warehouse_transfers",
+            "get_warehouse_transfer_by_id"
         ]
     }
 ]

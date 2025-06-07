@@ -9,7 +9,8 @@ import { Role } from '../../role/entities/role.entity';
 import { Permission } from '../../permission/entities/permission.entity';
 import { rolesPermissions } from '../../../databases/seeds/seed.data';
 import { RolePermission } from '../../role/entities/role-permission.entity';
-import { UserRole } from 'src/modules/user/entities/user-role.entity';
+import { UserRole } from '../../../modules/user/entities/user-role.entity';
+
 @Injectable()
 export class TenantService {
     constructor(

@@ -41,27 +41,27 @@ export class SeedService {
             console.log("Seeding Permissions Successful!");
 
             // Seeding Role-Permission
-            for (const role_permission of rolesPermissions) {
-                const role = await this.roleRepository.findOne({ where: { name: role_permission.role }, relations: ['rolePermissions'] });
+            // for (const role_permission of rolesPermissions) {
+            //     const role = await this.roleRepository.findOne({ where: { name: role_permission.role }, relations: ['rolePermissions'] });
 
-                if (role) {
-                    for (const permissionName of role_permission.permissions) {
-                        const permission = await this.permissionRepository.findOneBy({ name: permissionName });
-                        const rolePermission = this.rolePermissionRepository.findOneBy({ roleId: role.id, permissionId: permission!.id });
+            //     if (role) {
+            //         for (const permissionName of role_permission.permissions) {
+            //             const permission = await this.permissionRepository.findOneBy({ name: permissionName });
+            //             const rolePermission = this.rolePermissionRepository.findOneBy({ roleId: role.id, permissionId: permission!.id });
 
-                        if (!rolePermission) {
-                            const newRolePermission = this.rolePermissionRepository.create({
-                                roleId: role.id,
-                                permissionId: permission!.id
-                            });
-                            await this.rolePermissionRepository.save(newRolePermission);
-                        }
-                    }           
+            //             if (!rolePermission) {
+            //                 const newRolePermission = this.rolePermissionRepository.create({
+            //                     roleId: role.id,
+            //                     permissionId: permission!.id
+            //                 });
+            //                 await this.rolePermissionRepository.save(newRolePermission);
+            //             }
+            //         }           
 
-                    await this.roleRepository.save(role);
-                }
-            }
-            console.log("Seeding Roles-Permissions Successful!");
+            //         await this.roleRepository.save(role);
+            //     }
+            // }
+            // console.log("Seeding Roles-Permissions Successful!");
         
             // Seeding Default Admin User 
             // const role = await this.roleRepository.findOneBy({ name: "Admin" });

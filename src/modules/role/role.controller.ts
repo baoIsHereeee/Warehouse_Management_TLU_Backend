@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, UsePipes, ValidationPi
 import { BaseRoleDTO } from './dtos/base-role.dto';
 import { RoleService } from './services/role.service';
 import { Auth } from '../../decorators/permission.decorator';
-import { CurrentTenant } from 'src/decorators/current-tenant.decorator';
+import { CurrentTenant } from '../../decorators/current-tenant.decorator';
 
 @Controller('roles')
 export class RoleController {

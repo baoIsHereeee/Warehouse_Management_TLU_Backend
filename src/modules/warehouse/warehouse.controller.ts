@@ -31,7 +31,7 @@ export class WarehouseController {
     }
 
     @Get('transfers')
-    @Auth("delete_warehouse")
+    @Auth("get_all_warehouse_transfers")
     getAllWarehouseTransfers(
         @Query('search') query: string, 
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
@@ -49,7 +49,7 @@ export class WarehouseController {
     }
 
     @Get('transfers/:id')
-    @Auth("delete_warehouse")
+    @Auth("get_warehouse_transfer_by_id")
     async getWarehouseTransferById(@Param('id') id: string) {
         return this.warehouseService.getWarehouseTransferById(id);
     }
@@ -68,7 +68,7 @@ export class WarehouseController {
 
 
     @Post('transfers')
-    @Auth("delete_warehouse")
+    @Auth("create_warehouse_transfer")
     @UsePipes(new ValidationPipe())
     async createWarehouseTransfer(@Body() createData: CreateWarehouseTransferDTO, @CurrentTenant() tenantId: string) {
         return this.warehouseService.createWarehouseTransfer(createData, tenantId);
@@ -82,7 +82,7 @@ export class WarehouseController {
     }
 
     @Put('transfers/:id')
-    @Auth("delete_warehouse")
+    @Auth("update_warehouse_transfer")
     @UsePipes(new ValidationPipe())
     async updateWarehouseTransfer(@Param('id') id: string, @Body() updateData: UpdateWarehouseTransferDTO, @CurrentTenant() tenantId: string) {
         return this.warehouseService.updateWarehouseTransfer(id, updateData, tenantId);
@@ -96,7 +96,7 @@ export class WarehouseController {
     }
 
     @Delete('transfers/:id')
-    @Auth("delete_warehouse")
+    @Auth("delete_warehouse_transfer")
     async deleteWarehouseTransfer(@Param('id') id: string) {
         return this.warehouseService.deleteWarehouseTransfer(id);
     }

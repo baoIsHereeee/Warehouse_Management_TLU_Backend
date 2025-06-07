@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { ConfigService } from '@nestjs/config';
 import { Observable } from 'rxjs';
 import { JwtService } from '../modules/jwt/services/jwt.service';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -17,7 +18,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) throw new UnauthorizedException("Invalid Token!");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) throw new UnauthorizedException("No Token Provided!");
 
     const token = authHeader.split(' ')[1];
 
@@ -29,7 +30,8 @@ export class AuthGuard implements CanActivate {
       return true;
 
     } catch (error) {
-      return false; 
+      if (error instanceof TokenExpiredError) throw new UnauthorizedException("Token Expired!");
+      throw new UnauthorizedException("Invalid Token!");
     }
   }
 }

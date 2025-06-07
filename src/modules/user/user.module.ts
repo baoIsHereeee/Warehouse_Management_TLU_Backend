@@ -11,11 +11,12 @@ import { JwtModule } from '../jwt/jwt.module';
 import { PermissionModule } from '../permission/permission.module';
 import UserRoleRepository from './repositories/user-role.repository';
 import { TenantModule } from '../tenant/tenant.module';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
   controllers: [UserController],
   providers: [UserService, UserRepository, UserRoleRepository],
-  imports: [AuthModule, RoleModule, ConfigModule, JwtModule, PermissionModule, TenantModule],
+  imports: [AuthModule, RoleModule, ConfigModule, JwtModule, PermissionModule, TenantModule, RedisModule],
   exports: [UserRepository, UserRoleRepository]
 })
 export class UserModule {}

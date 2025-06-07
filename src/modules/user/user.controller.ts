@@ -1,4 +1,4 @@
-import { Body, Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UsePipes, ValidationPipe, Res } from '@nestjs/common';
 import { UserService } from './services/user.service';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { User } from './entities/user.entity';
@@ -16,6 +16,16 @@ export class UserController {
     @UsePipes(new ValidationPipe())
     signIn(@Body() payload: SignInPayload, @Param('tenantName') tenantName: string) {
         return this.userService.signIn(payload, tenantName);
+    }
+
+    @Post('renew-access-token')
+    renewAccessToken(@Body('refreshToken') refreshToken: string) {
+        return this.userService.renewAccessToken(refreshToken);
+    }
+
+    @Post('sign-out')
+    signOut(@Body('refreshToken') refreshToken: string) {
+        return this.userService.signOut(refreshToken);
     }
 
     @Get("users")

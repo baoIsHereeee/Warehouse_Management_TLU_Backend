@@ -25,24 +25,9 @@ import { UtilModule } from './modules/util/util.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { ReportModule } from './modules/report/report.module';
 import { TenantModule } from './modules/tenant/tenant.module';
-import { RedisModule } from './redis/redis.module';
 
 @Module({
-  imports: [
-    UserModule,
-    RoleModule,
-    PermissionModule,
-    CategoryModule,
-    ProductModule,
-    ImportRecordModule,
-    ExportRecordModule,
-    CustomerModule,
-    SupplierModule,
-    WarehouseModule,
-    JwtModule,
-    AuthModule,
-    SeedsModule,
-    RedisModule,
+  imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, JwtModule, AuthModule, SeedsModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => (configService.get('typeorm') as TypeOrmModuleOptions)

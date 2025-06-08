@@ -14,7 +14,7 @@ import { RoleService } from '../../../modules/role/services/role.service';
 import UserRoleRepository from '../repositories/user-role.repository';
 import  TenantRepository  from '../../tenant/repositories/tenant.repository';
 import { RedisService } from '../../../modules/redis/services/redis.service';
-import { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
+import { JsonWebTokenError, JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -214,7 +214,9 @@ export class UserService {
             }
         } catch (error) {
             if (error instanceof TokenExpiredError) throw new UnauthorizedException("Refresh token expired! Please login again!");
-            else throw error;
+            if (error instanceof JsonWebTokenError) throw new UnauthorizedException('Invalid refresh token! Please login again!');
+
+            throw error;
         }
     }
 

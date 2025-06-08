@@ -18,6 +18,16 @@ export class UserController {
         return this.userService.signIn(payload, tenantName);
     }
 
+    @Post('renew-access-token')
+    renewAccessToken(@Body("refreshToken") refreshToken: string) {
+        return this.userService.renewAccessToken(refreshToken);
+    } 
+
+    @Post('sign-out')
+    signOut(@Body("refreshToken") refreshToken: string) {
+        return this.userService.signOut(refreshToken);
+    }
+    
     @Get("users")
     @Auth("get_all_users")
     getAllUsers(

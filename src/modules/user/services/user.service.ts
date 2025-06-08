@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
@@ -13,6 +13,9 @@ import { JwtService } from '../../jwt/services/jwt.service';
 import { RoleService } from '../../../modules/role/services/role.service';
 import UserRoleRepository from '../repositories/user-role.repository';
 import  TenantRepository  from '../../tenant/repositories/tenant.repository';
+import { RedisService } from '../../../modules/redis/services/redis.service';
+import { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UserService {
@@ -24,7 +27,8 @@ export class UserService {
         private jwtService: JwtService,
         private roleService: RoleService,
         private userRoleRepository: UserRoleRepository,
-        private tenantRepository: TenantRepository
+        private tenantRepository: TenantRepository,
+        private redisService: RedisService
     ) {}
 
     async getAllUsers(options: IPaginationOptions, tenantId: string, query?: string): Promise<Pagination<User>> {
@@ -141,7 +145,8 @@ export class UserService {
                 id: user.id,
                 email: user.email,
                 roles: userRoles,
-                tenant: user.tenant.id
+                tenant: user.tenant.id,
+                jti: uuidv4()
             },
 
             this.configService.getOrThrow("ACCESS_SECRET_TOKEN"),
@@ -156,7 +161,8 @@ export class UserService {
                 id: user.id,
                 email: user.email,
                 roles: userRoles,
-                tenant: user.tenant.id
+                tenant: user.tenant.id,
+                jti: uuidv4()
             },
 
             this.configService.getOrThrow("REFRESH_SECRET_TOKEN"),
@@ -169,6 +175,46 @@ export class UserService {
         return {
             accessToken: accessToken,
             refreshToken: refreshToken,
+        }
+    }
+
+    async signOut(refreshToken: string) {
+        const decoded = this.jwtService.verify(refreshToken, this.configService.getOrThrow("REFRESH_SECRET_TOKEN")) as JwtPayload;
+
+        const remainingTime = (decoded.exp! - Math.floor(Date.now() / 1000)) * 1000;
+
+        await this.redisService.setCache(decoded.jti!, "Blacklisted", remainingTime);
+
+        return { message: "Signed out successfully!" }
+    }
+
+    async renewAccessToken(refreshToken: string) {
+        try {
+            const decoded = this.jwtService.verify(refreshToken, this.configService.getOrThrow("REFRESH_SECRET_TOKEN")) as JwtPayload;
+
+            const isBlacklisted = await this.redisService.getCache(decoded.jti!);
+            if (isBlacklisted) throw new UnauthorizedException("Refresh token has been revoked! Please sign in again!");
+
+            return { 
+                accessToken: this.jwtService.sign(
+                    {
+                        id: decoded.id,
+                        email: decoded.email,
+                        roles: decoded.roles,
+                        tenant: decoded.tenant
+    
+                    },
+        
+                    this.configService.getOrThrow("ACCESS_SECRET_TOKEN"),
+        
+                    {
+                        expiresIn: "2h"
+                    }
+                ) 
+            }
+        } catch (error) {
+            if (error instanceof TokenExpiredError) throw new UnauthorizedException("Refresh token expired! Please login again!");
+            else throw error;
         }
     }
 

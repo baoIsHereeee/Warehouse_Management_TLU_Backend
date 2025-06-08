@@ -25,6 +25,7 @@ import { UtilModule } from './modules/util/util.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { ReportModule } from './modules/report/report.module';
 import { TenantModule } from './modules/tenant/tenant.module';
+import { RedisModule } from './modules/redis/redis.module';
 
 @Module({
   imports: [UserModule, RoleModule, PermissionModule, CategoryModule, ProductModule, ImportRecordModule, ExportRecordModule, CustomerModule, SupplierModule, WarehouseModule, JwtModule, AuthModule, SeedsModule,
@@ -32,7 +33,6 @@ import { TenantModule } from './modules/tenant/tenant.module';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => (configService.get('typeorm') as TypeOrmModuleOptions)
     }),
-
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: path.resolve(__dirname, './configs/.env'),
@@ -70,7 +70,8 @@ import { TenantModule } from './modules/tenant/tenant.module';
     UtilModule,
     CloudinaryModule,
     ReportModule,
-    TenantModule
+    TenantModule,
+    RedisModule
   ],
   controllers: [AppController],
   providers: [AppService],

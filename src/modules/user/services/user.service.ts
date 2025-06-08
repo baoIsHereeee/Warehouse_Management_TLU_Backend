@@ -179,13 +179,20 @@ export class UserService {
     }
 
     async signOut(refreshToken: string) {
-        const decoded = this.jwtService.verify(refreshToken, this.configService.getOrThrow("REFRESH_SECRET_TOKEN")) as JwtPayload;
+        try {
+            const decoded = this.jwtService.verify(refreshToken, this.configService.getOrThrow("REFRESH_SECRET_TOKEN")) as JwtPayload;
 
-        const remainingTime = (decoded.exp! - Math.floor(Date.now() / 1000)) * 1000;
+            const remainingTime = (decoded.exp! - Math.floor(Date.now() / 1000)) * 1000;
+    
+            await this.redisService.setCache(decoded.jti!, "Blacklisted", remainingTime);
+    
+            return { message: "Signed out successfully!" }
+        } catch (error) {
+            if (error instanceof TokenExpiredError) throw new UnauthorizedException("Refresh token expired! Please login again!");
+            if (error instanceof JsonWebTokenError) throw new UnauthorizedException('Invalid refresh token! Please login again!');
 
-        await this.redisService.setCache(decoded.jti!, "Blacklisted", remainingTime);
-
-        return { message: "Signed out successfully!" }
+            throw error;
+        }
     }
 
     async renewAccessToken(refreshToken: string) {
